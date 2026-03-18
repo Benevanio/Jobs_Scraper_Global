@@ -1,0 +1,11 @@
+services:
+  vagas-scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vagas-full
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+    restart: "no"

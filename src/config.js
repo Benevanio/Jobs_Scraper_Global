@@ -1,5 +1,11 @@
 const DEFAULT_KEYWORDS = [  
-  "
+  "Java",
+  "JavaScript",
+  "React",
+  "Node.js",
+  "Mulesoft",
+  "Desenvolvedor Junior",
+  "Desenvolvedor Pleno",
 ];
 
 function parseBoolean(value, fallback) {

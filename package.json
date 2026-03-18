@@ -28,6 +28,7 @@
   "dependencies": {
     "axios": "^1.13.6",
     "cheerio": "^1.2.0",
+    "dotenv": "^17.3.1",
     "pdfkit": "^0.18.0",
     "xlsx": "^0.18.5"
   },
