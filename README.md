@@ -15,15 +15,13 @@ Bot de automacao para buscar vagas no LinkedIn com foco em Brasil remoto e expor
 - `index.js`: entrypoint e tratamento de falhas
 - `src/app.js`: fluxo principal (coleta e exportacao)
 - `src/config.js`: leitura das variaveis de ambiente
-- `src/browser.js`: inicializacao do navegador para o Puppeteer
-- `src/linkedinScraper.js`: montagem da URL e extracao das vagas
+- `src/linkedinScraper.js`: coleta HTTP, paginacao e extracao das vagas
 - `src/exporter.js`: geracao de Excel e PDF
 - `src/logger.js`: logs padronizados
 
 ## Requisitos
 
 - Node.js 22+
-- Google Chrome ou Microsoft Edge instalado
 - npm
 
 ## Instalacao
@@ -41,25 +39,22 @@ Bot de automacao para buscar vagas no LinkedIn com foco em Brasil remoto e expor
 
 Todas sao opcionais.
 
-- `HEADLESS` (padrao: `false`)
 - `WAIT_BETWEEN_SEARCHES_MS` (padrao: `5000`)
 - `PAGE_TIMEOUT_MS` (padrao: `10000`)
-- `VIEWPORT_WIDTH` (padrao: `1280`)
-- `VIEWPORT_HEIGHT` (padrao: `800`)
+- `MAX_PAGES_PER_KEYWORD` (padrao: `5`)
 - `OUTPUT_FILE` (padrao: `vagas_linkedin.xlsx`)
 - `PDF_FILE` (padrao: `vagas_linkedin.pdf`)
 - `SEARCH_LOCATION` (padrao: `Brasil`)
 - `SEARCH_GEO_ID` (padrao: `106057199`)
 - `SEARCH_LANGUAGE` (padrao: `pt`)
 - `JOB_TYPES` (padrao: `C,F`)  
-	Valores comuns: `C` (PJ), `F` (CLT), `C,F` (ambos)
+  Valores comuns: `C` (PJ), `F` (CLT), `C,F` (ambos)
 - `SEARCH_KEYWORDS` (lista separada por virgula)
-- `CHROME_PATH` (caminho do executavel do navegador)
 
 Exemplo no Windows cmd (Brasil remoto, PJ+CLT):
 
 ```bat
-set SEARCH_GEO_ID=106057199&& set JOB_TYPES=C,F&& set HEADLESS=true&& npm start
+set SEARCH_GEO_ID=106057199&& set JOB_TYPES=C,F&& set MAX_PAGES_PER_KEYWORD=5&& npm start
 ```
 
 Exemplo com palavras-chave personalizadas:
@@ -87,16 +82,11 @@ No PDF, os links sao normalizados para uma versao curta do LinkedIn quando possi
 
 ## Troubleshooting
 
-Chrome/Edge nao encontrado:
+Poucas ou nenhuma vaga retornada:
 
-- Instale Google Chrome ou Microsoft Edge
-- Ou informe `CHROME_PATH` manualmente
-
-Exemplo no Windows cmd:
-
-```bat
-set CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe&& npm start
-```
+- Aumente `MAX_PAGES_PER_KEYWORD`
+- Aumente `WAIT_BETWEEN_SEARCHES_MS` para reduzir bloqueios temporarios
+- Reduza a quantidade de keywords por execucao
 
 ## Avisos
 

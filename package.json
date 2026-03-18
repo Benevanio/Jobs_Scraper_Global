@@ -1,7 +1,7 @@
 {
   "name": "vagas-full",
   "version": "1.0.0",
-  "description": "Bot automatizado para buscar vagas de tecnologia no LinkedIn em escala global",
+  "description": "Bot HTTP para buscar vagas no LinkedIn (Brasil remoto) e exportar em Excel e PDF",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -14,19 +14,21 @@
     "linkedin",
     "jobs",
     "scraping",
-    "puppeteer",
+    "http",
     "vagas",
     "emprego",
-    "global",
+    "brasil",
     "tecnologia",
     "automation",
-    "puppeteer-core"
+    "axios",
+    "cheerio"
   ],
   "author": "Bene Tesla Dev",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.13.6",
+    "cheerio": "^1.2.0",
     "pdfkit": "^0.18.0",
-    "puppeteer-core": "^24.22.3",
     "xlsx": "^0.18.5"
   },
   "engines": {
