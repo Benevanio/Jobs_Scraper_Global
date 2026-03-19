@@ -13,6 +13,9 @@ function buildSearchUrl(keyword, config, start = 0) {
   if (config.jobTypes) {
     url.searchParams.set("f_JT", config.jobTypes);
   }
+  if (config.timeFilter) {
+    url.searchParams.set("f_TPR", config.timeFilter);
+  }
   url.searchParams.set("start", String(start));
   return url.toString();
 }

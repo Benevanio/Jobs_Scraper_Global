@@ -49,6 +49,8 @@ Todas sao opcionais.
 - `SEARCH_LANGUAGE` (padrao: `pt`)
 - `JOB_TYPES` (padrao: `C,F`)  
   Valores comuns: `C` (PJ), `F` (CLT), `C,F` (ambos)
+- `TIME_FILTER` (padrao: `r604800`)  
+  Valores comuns: `r86400` (24h), `r604800` (7 dias), `r2592000` (30 dias)
 - `SEARCH_KEYWORDS` (lista separada por virgula)
 
 Exemplo no Windows cmd (Brasil remoto, PJ+CLT):

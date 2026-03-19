@@ -45,6 +45,15 @@ function parseKeywords(value) {
   return keywords.length > 0 ? keywords : DEFAULT_KEYWORDS;
 }
 
+function parseTimeFilter(value, fallback) {
+  if (!value) {
+    return fallback;
+  }
+
+  const normalized = String(value).trim();
+  return /^r\d+$/.test(normalized) ? normalized : fallback;
+}
+
 export function getConfig() {
   return {
     headless: parseBoolean(process.env.HEADLESS, false),
@@ -62,6 +71,8 @@ export function getConfig() {
     searchLanguage: process.env.SEARCH_LANGUAGE || "pt",
     remoteOnly: parseBoolean(process.env.REMOTE_ONLY, true),
     jobTypes: process.env.JOB_TYPES || "C,F",
+    // f_TPR examples: r86400 (24h), r604800 (7 dias), r2592000 (30 dias)
+    timeFilter: parseTimeFilter(process.env.TIME_FILTER, "r604800"),
     keywords: parseKeywords(process.env.SEARCH_KEYWORDS)
   };
 }
