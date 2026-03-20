@@ -64,8 +64,8 @@ export function getConfig() {
       width: parseNumber(process.env.VIEWPORT_WIDTH, 1280),
       height: parseNumber(process.env.VIEWPORT_HEIGHT, 800)
     },
-    outputFile: process.env.OUTPUT_FILE || "vagas_linkedin.xlsx",
-    pdfFile: process.env.PDF_FILE || "vagas_linkedin.pdf",
+    outputFile: process.env.OUTPUT_FILE || "output/vagas_linkedin.xlsx",
+    pdfFile: process.env.PDF_FILE || "output/vagas_linkedin.pdf",
     searchLocation: process.env.SEARCH_LOCATION || "Brasil",
     searchGeoId: process.env.SEARCH_GEO_ID || "106057199",
     searchLanguage: process.env.SEARCH_LANGUAGE || "pt",

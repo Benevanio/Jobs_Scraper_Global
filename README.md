@@ -187,8 +187,8 @@ Todas sao opcionais.
 - `WAIT_BETWEEN_SEARCHES_MS` (padrao: `5000`)
 - `PAGE_TIMEOUT_MS` (padrao: `10000`)
 - `MAX_PAGES_PER_KEYWORD` (padrao: `5`)
-- `OUTPUT_FILE` (padrao: `vagas_linkedin.xlsx`)
-- `PDF_FILE` (padrao: `vagas_linkedin.pdf`)
+- `OUTPUT_FILE` (padrao: `output/vagas_linkedin.xlsx`)
+- `PDF_FILE` (padrao: `output/vagas_linkedin.pdf`)
 - `SEARCH_LOCATION` (padrao: `Brasil`)
 - `SEARCH_GEO_ID` (padrao: `106057199`)
 - `SEARCH_LANGUAGE` (padrao: `pt`)
@@ -212,10 +212,10 @@ set SEARCH_KEYWORDS=UX Designer,UI Designer,Product Manager,Product Owner&& npm 
 
 ## Saida
 
-Arquivos gerados por padrao:
+Arquivos gerados por padrao (pasta `output/`):
 
-- `vagas_linkedin.xlsx`
-- `vagas_linkedin.pdf`
+- `output/vagas_linkedin.xlsx`
+- `output/vagas_linkedin.pdf`
 
 Colunas exportadas:
 

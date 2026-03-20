@@ -1,9 +1,18 @@
-import { createWriteStream } from "fs";
+import { createWriteStream, mkdirSync } from "fs";
+import { dirname } from "path";
 import PDFDocument from "pdfkit";
 import XLSX from "xlsx";
 import { logInfo } from "./logger.js";
 
+function ensureParentDir(filePath) {
+  const dir = dirname(filePath);
+  if (dir && dir !== ".") {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
 export function exportToExcel(rows, outputFile) {
+  ensureParentDir(outputFile);
   const worksheet = XLSX.utils.json_to_sheet(rows);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Vagas");
@@ -21,6 +30,7 @@ function cleanJobUrl(url) {
 }
 
 export function exportToPDF(rows, outputFile) {
+  ensureParentDir(outputFile);
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 30, size: "A4", layout: "landscape" });
     const stream = createWriteStream(outputFile);
