@@ -1,11 +1,13 @@
-import { useCallback, type SetStateAction } from "react";
 import { JobsFiltersCard } from "@/components/JobsFiltersCard";
 import { JobsHeaderCard } from "@/components/JobsHeaderCard";
 import { JobsTableCard } from "@/components/JobsTableCard";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useJobsData } from "@/hooks/useJobsData";
 import { useJobsFiltering } from "@/hooks/useJobsFiltering";
 import { useJobsPagination } from "@/hooks/useJobsPagination";
+import { useTheme } from "@/hooks/useTheme";
 import type { JobsMeta } from "@/types/jobs";
+import { useCallback, type SetStateAction } from "react";
 
 function formatDate(timestamp: JobsMeta["modifiedAt"]): string {
   if (!timestamp) {
@@ -15,6 +17,8 @@ function formatDate(timestamp: JobsMeta["modifiedAt"]): string {
 }
 
 function App() {
+  const { resolvedTheme, toggleTheme } = useTheme();
+
   const { files, selectedFile, setSelectedFile, jobs, meta, loading, error, loadJobs } = useJobsData();
 
   const { search, setSearch, keywordFilter, setKeywordFilter, keywords, filteredJobs } = useJobsFiltering(jobs);
@@ -57,11 +61,11 @@ function App() {
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background px-4 py-8 md:px-8">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(236,195,117,0.35),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(92,151,191,0.28),transparent_35%),radial-gradient(circle_at_50%_95%,rgba(201,120,99,0.22),transparent_40%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-background px-4 py-8 transition-colors duration-300 md:px-8">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(236,195,117,0.35),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(92,151,191,0.28),transparent_35%),radial-gradient(circle_at_50%_95%,rgba(201,120,99,0.22),transparent_40%)] dark:bg-[radial-gradient(circle_at_20%_15%,rgba(240,180,95,0.18),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(92,151,191,0.18),transparent_35%),radial-gradient(circle_at_50%_95%,rgba(201,120,99,0.15),transparent_40%)]" />
 
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <JobsHeaderCard meta={meta} />
+        <JobsHeaderCard meta={meta} actions={<ThemeToggle theme={resolvedTheme} onToggle={toggleTheme} />} />
 
         <JobsFiltersCard
           search={search}

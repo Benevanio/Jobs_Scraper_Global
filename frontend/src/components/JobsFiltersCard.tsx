@@ -1,9 +1,9 @@
-import { RefreshCcw, Search } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { JobFile } from "@/types/jobs";
+import { RefreshCcw, Search } from "lucide-react";
+import type { Dispatch, SetStateAction } from "react";
 
 interface JobsFiltersCardProps {
   search: string;
@@ -31,7 +31,7 @@ export function JobsFiltersCard({
   onRefresh,
 }: JobsFiltersCardProps) {
   return (
-    <Card className="border-white/30 bg-card/85 backdrop-blur">
+    <Card className="border-border/70 bg-card/85 backdrop-blur dark:bg-card/95">
       <CardContent className="grid gap-3 pt-6 md:grid-cols-4">
         <div className="relative md:col-span-2">
           <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />

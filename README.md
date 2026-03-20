@@ -145,7 +145,7 @@ Agora o Docker foi separado em 3 servicos:
 ### Subir dashboard + API (sem scraping automatico)
 
 ```bash
-docker compose up --build
+docker compose up --build -D
 ```
 
 ### Executar scraping manualmente

@@ -1,5 +1,5 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Job, JobsMeta } from "@/types/jobs";
 
@@ -35,7 +35,7 @@ export function JobsTableCard({
   onPageSizeChange,
 }: JobsTableCardProps) {
   return (
-    <Card className="border-white/30 bg-card/90 backdrop-blur">
+    <Card className="border-border/70 bg-card/90 backdrop-blur dark:bg-card/95">
       <CardHeader>
         <CardTitle className="text-lg">Vagas Encontradas</CardTitle>
         <CardDescription>
@@ -44,7 +44,9 @@ export function JobsTableCard({
       </CardHeader>
       <CardContent>
         {error ? (
-          <div className="rounded-md border border-red-400/40 bg-red-500/10 p-4 text-sm text-red-900">{error}</div>
+          <div className="rounded-md border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
+            {error}
+          </div>
         ) : null}
 
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
