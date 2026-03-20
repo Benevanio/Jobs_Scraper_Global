@@ -2,6 +2,17 @@
 
 Bot de automacao para buscar vagas no LinkedIn com foco em Brasil remoto e exportar os resultados em Excel e PDF.
 
+
+## DEMO:
+
+<img width="1891" height="744" alt="Image" src="https://github.com/user-attachments/assets/e761cc42-b9f0-4873-810b-1c3e729e8383" />
+
+
+<img width="1890" height="687" alt="Image" src="https://github.com/user-attachments/assets/36d45dd6-b852-473e-8519-85ff74958721" />
+
+
+<img width="1886" height="757" alt="Image" src="https://github.com/user-attachments/assets/76d4cba7-dedd-4975-8f33-e4050fd16e9a" />
+
 ## Comportamento atual
 
 - Escopo geografico: Brasil (geoId padrao `106057199`)
