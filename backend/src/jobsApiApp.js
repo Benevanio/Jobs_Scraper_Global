@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { existsSync, readdirSync, statSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, statSync } from "fs";
 import path from "path";
 import XLSX from "xlsx";
 
@@ -14,6 +14,9 @@ export function createJobsApiApp(options = {}) {
   app.use(cors());
 
   function listXlsxFiles() {
+    // Garante que a pasta exista tambem no primeiro boot em ambiente Docker.
+    mkdirSync(outputDir, { recursive: true });
+
     if (!existsSync(outputDir)) {
       return [];
     }

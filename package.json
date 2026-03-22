@@ -1,52 +1,22 @@
 {
-  "name": "vagas-full",
-  "version": "1.0.0",
-  "description": "Bot HTTP para buscar vagas no LinkedIn (Brasil remoto) e exportar em Excel e PDF",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js",
-    "run": "nodemon index.js",
-    "api": "node src/server.js",
-    "frontend:dev": "npm run dev --prefix frontend",
-    "frontend:build": "npm run build --prefix frontend",
-    "frontend:preview": "npm run preview --prefix frontend",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "validate": "npm test && npm run lint --prefix frontend && npm run build --prefix frontend",
-    "validate:ci": "npm ci && npm ci --prefix frontend && npm test && npm run lint --prefix frontend && npm run build --prefix frontend"
-  },
-  "keywords": [
-    "linkedin",
-    "jobs",
-    "scraping",
-    "http",
-    "vagas",
-    "emprego",
-    "brasil",
-    "tecnologia",
-    "automation",
-    "axios",
-    "cheerio"
+  "name": "vagas-full-monorepo",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
   ],
-  "author": "Bene Tesla Dev",
-  "license": "ISC",
-  "dependencies": {
-    "axios": "^1.13.6",
-    "cheerio": "^1.2.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "pdfkit": "^0.18.0",
-    "xlsx": "^0.18.5"
-  },
-  "engines": {
-    "node": ">=22.0.0"
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "scraper": "npm run scraper --workspace=backend",
+    "scraper:watch": "npm run scraper:watch --workspace=backend",
+    "test": "npm run test --workspace=backend",
+    "test:coverage": "npm run test:coverage --workspace=frontend && npm run test:coverage --workspace=backend",
+    "build": "npm run build --workspace=frontend",
+    "validate": "npm run test --workspace=backend && npm run lint --workspace=frontend && npm run build --workspace=frontend"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14",
-    "supertest": "^7.1.4",
-    "vitest": "^3.2.4"
+    "concurrently": "^9.2.1"
   }
 }

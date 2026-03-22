@@ -1,0 +1,51 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Backend para scraping e API de vagas do LinkedIn",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "scraper": "node index.js",
+    "scraper:watch": "nodemon index.js",
+    "api": "node src/server.js",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
+    "validate": "npm test"
+  },
+  "keywords": [
+    "linkedin",
+    "jobs",
+    "scraping",
+    "http",
+    "vagas",
+    "emprego",
+    "brasil",
+    "tecnologia",
+    "automation",
+    "axios",
+    "cheerio"
+  ],
+  "author": "Bene Tesla Dev",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "cheerio": "^1.2.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "pdfkit": "^0.18.0",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.2.4",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.1.4",
+    "vitest": "^3.2.4"
+  }
+}

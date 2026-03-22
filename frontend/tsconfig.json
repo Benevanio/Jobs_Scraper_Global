@@ -15,6 +15,11 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
+    "types": [
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ],
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -24,6 +29,8 @@
   },
   "include": [
     "src",
+    "tests",
+    "vitest.config.js",
     "vite.config.js",
     "vite.config.ts"
   ]

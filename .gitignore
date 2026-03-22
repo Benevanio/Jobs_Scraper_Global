@@ -1,8 +1,20 @@
-/node_modules/
+node_modules/
 .DS_Store
 .env
+.env.*
+!.env.example
 .vscode/
-/output/
+dist/
+build/
+output/
+backend/output/
 npm-debug.log
 yarn-error.log
 yarn-debug.log
+
+# Test coverage reports
+coverage/
+frontend/coverage/
+backend/coverage/
+*.lcov
+.nyc_output/

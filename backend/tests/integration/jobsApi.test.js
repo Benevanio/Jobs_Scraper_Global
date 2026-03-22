@@ -4,7 +4,7 @@ import { join } from "path";
 import request from "supertest";
 import { afterEach, describe, expect, it } from "vitest";
 import XLSX from "xlsx";
-import { createJobsApiApp } from "../src/jobsApiApp.js";
+import { createJobsApiApp } from "../../src/jobsApiApp.js";
 
 describe("jobs API", () => {
   let tmpDir;
@@ -31,9 +31,7 @@ describe("jobs API", () => {
     tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
     const app = createJobsApiApp({ outputDir: tmpDir });
     const res = await request(app).get("/api/jobs").expect(404);
-    expect(res.body.message).toBe(
-      "Nenhum arquivo .xlsx encontrado na pasta output.",
-    );
+    expect(res.body.message).toBe("Nenhum arquivo .xlsx encontrado na pasta output.");
   });
 
   it("GET /api/jobs le o xlsx mais recente e retorna linhas", async () => {
@@ -62,10 +60,7 @@ describe("jobs API", () => {
     XLSX.writeFile(workbook, join(tmpDir, "a.xlsx"));
 
     const app = createJobsApiApp({ outputDir: tmpDir });
-    const res = await request(app)
-      .get("/api/jobs")
-      .query({ file: "nao-existe.xlsx" })
-      .expect(404);
+    const res = await request(app).get("/api/jobs").query({ file: "nao-existe.xlsx" }).expect(404);
     expect(res.body.message).toBe("Arquivo solicitado nao encontrado.");
   });
 });

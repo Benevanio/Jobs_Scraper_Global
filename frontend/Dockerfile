@@ -2,10 +2,10 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-COPY frontend/package*.json ./
+COPY package*.json ./
 RUN npm ci
 
-COPY frontend .
+COPY . .
 
 EXPOSE 5173
 
