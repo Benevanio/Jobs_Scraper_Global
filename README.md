@@ -102,7 +102,7 @@ npm --workspace frontend run test:coverage
 npm --workspace backend run test:coverage
 ```
 
-Guia de boas praticas de testes: `TESTING.md`.
+Guia de boas praticas de testes: [TESTING.md](https://github.com/Benevanio/Jobs_Scraper_Global/blob/master/TESTING.md).
 
 ## Variaveis de ambiente
 
