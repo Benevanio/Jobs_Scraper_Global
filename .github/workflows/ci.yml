@@ -20,6 +20,9 @@ jobs:
       - name: Instalar dependencias (raiz)
         run: npm ci
 
+      - name: Workaround npm optional deps (rollup linux)
+        run: npm i --no-save --workspace=frontend @rollup/rollup-linux-x64-gnu
+
       - name: Coverage frontend
         run: npm run test:coverage --workspace=frontend
 
