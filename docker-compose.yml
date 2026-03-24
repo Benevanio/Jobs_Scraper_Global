@@ -1,10 +1,10 @@
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: vagas-backend
-    command: ["node", "src/server.js"]
+    command: ["node", "backend/index.js"]
     env_file:
       - ./backend/.env
     environment:
@@ -17,8 +17,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: vagas-frontend
     environment:
       - VITE_API_PROXY_TARGET=http://backend:3001

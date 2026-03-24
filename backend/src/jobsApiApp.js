@@ -3,6 +3,9 @@ import express from "express";
 import { existsSync, mkdirSync, readdirSync, statSync } from "fs";
 import path from "path";
 import XLSX from "xlsx";
+import { getConfig } from "./config.js";
+import { searchJobsWithCache } from "./pipeline/searchJobsWithCache.js";
+import { sources } from "./sources/index.js";
 
 /**
  * @param {{ outputDir?: string }} [options]
@@ -61,6 +64,30 @@ export function createJobsApiApp(options = {}) {
     }));
 
     res.json({ files });
+  });
+
+  // Novo endpoint para busca de vagas com cache
+  app.get("/api/jobs/search", async (req, res) => {
+    try {
+      const config = {
+        ...getConfig(),
+        keywords: req.query.keywords
+          ? String(req.query.keywords)
+              .split(",")
+              .map((k) => k.trim())
+          : getConfig().keywords,
+      };
+
+      const ttlMs = 10 * 60 * 1000; // 10 minutos
+      const result = await searchJobsWithCache(sources, config, ttlMs);
+
+      return res.json(result);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro ao buscar vagas.",
+        error: error?.message || "Erro desconhecido",
+      });
+    }
   });
 
   app.get("/api/jobs", (req, res) => {

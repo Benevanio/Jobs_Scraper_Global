@@ -2,6 +2,7 @@ export interface Job {
   palavra?: string | null;
   titulo?: string | null;
   empresa?: string | null;
+  source?: string | null;
   local?: string | null;
   link?: string | null;
 }

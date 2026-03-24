@@ -18,5 +18,8 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "rolldown": "^1.0.0-rc.11"
   }
 }
