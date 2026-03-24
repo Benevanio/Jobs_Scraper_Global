@@ -32,7 +32,11 @@ function cleanJobUrl(url) {
 export function exportToPDF(rows, outputFile) {
   ensureParentDir(outputFile);
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 30, size: "A4", layout: "landscape" });
+    const doc = new PDFDocument({
+      margin: 30,
+      size: "A4",
+      layout: "landscape",
+    });
     const stream = createWriteStream(outputFile);
 
     doc.pipe(stream);
@@ -43,17 +47,21 @@ export function exportToPDF(rows, outputFile) {
     doc
       .fontSize(14)
       .font("Helvetica-Bold")
-      .text("Vagas LinkedIn – Brasil (Remoto)", { align: "center" });
+      .text("Vagas – Brasil (Remoto)", { align: "center" });
     doc.moveDown(0.5);
-    doc.fontSize(9).font("Helvetica").text(`Total: ${rows.length} vagas`, { align: "center" });
+    doc
+      .fontSize(9)
+      .font("Helvetica")
+      .text(`Total: ${rows.length} vagas`, { align: "center" });
     doc.moveDown(1);
 
     const cols = [
-      { key: "palavra",  label: "Palavra-chave", width: 110 },
-      { key: "titulo",   label: "Título",         width: 160 },
-      { key: "empresa",  label: "Empresa",        width: 130 },
-      { key: "local",    label: "Local",          width: 100 },
-      { key: "link",     label: "Link",           width: 280 }
+      { key: "source", label: "Fonte", width: 80 },
+      { key: "palavra", label: "Palavra-chave", width: 110 },
+      { key: "titulo", label: "Título", width: 160 },
+      { key: "empresa", label: "Empresa", width: 130 },
+      { key: "local", label: "Local", width: 100 },
+      { key: "link", label: "Link", width: 280 },
     ];
 
     const rowH = 18;
@@ -64,9 +72,23 @@ export function exportToPDF(rows, outputFile) {
       const y = doc.y;
 
       if (isHeader) {
-        doc.rect(x, y, cols.reduce((s, c) => s + c.width, 0), rowH).fill("#2c3e50");
+        doc
+          .rect(
+            x,
+            y,
+            cols.reduce((s, c) => s + c.width, 0),
+            rowH,
+          )
+          .fill("#2c3e50");
       } else {
-        doc.rect(x, y, cols.reduce((s, c) => s + c.width, 0), rowH).fillAndStroke("#f9f9f9", "#dddddd");
+        doc
+          .rect(
+            x,
+            y,
+            cols.reduce((s, c) => s + c.width, 0),
+            rowH,
+          )
+          .fillAndStroke("#f9f9f9", "#dddddd");
       }
 
       doc.font(isHeader ? "Helvetica-Bold" : "Helvetica").fontSize(8);
@@ -77,14 +99,19 @@ export function exportToPDF(rows, outputFile) {
         const text = isLink ? cleanJobUrl(raw) : raw;
 
         if (isLink) {
-          doc
-            .fillColor("#0563C1")
-            .text(text, x + 3, y + 4, { width: col.width - 6, lineBreak: false });
+          doc.fillColor("#0563C1").text(text, x + 3, y + 4, {
+            width: col.width - 6,
+            lineBreak: false,
+          });
           doc.link(x + 3, y + 4, col.width - 6, 10, text);
         } else {
           doc
             .fillColor(isHeader ? "white" : "#222222")
-            .text(text, x + 3, y + 4, { width: col.width - 6, lineBreak: false, ellipsis: true });
+            .text(text, x + 3, y + 4, {
+              width: col.width - 6,
+              lineBreak: false,
+              ellipsis: true,
+            });
         }
         x += col.width;
       }
@@ -92,12 +119,31 @@ export function exportToPDF(rows, outputFile) {
       doc.y = y + rowH;
     }
 
-    drawRow({ palavra: "Palavra-chave", titulo: "Título", empresa: "Empresa", local: "Local", link: "Link" }, true);
+    drawRow(
+      {
+        palavra: "Palavra-chave",
+        titulo: "Título",
+        empresa: "Empresa",
+        local: "Local",
+        link: "Link",
+      },
+      true,
+    );
 
     for (let i = 0; i < rows.length; i++) {
       if (doc.y + rowH > doc.page.height - doc.page.margins.bottom) {
         doc.addPage();
-        drawRow({ palavra: "Palavra-chave", titulo: "Título", empresa: "Empresa", local: "Local", link: "Link" }, true);
+        drawRow(
+          {
+            source: "Fonte",
+            palavra: "Palavra-chave",
+            titulo: "Título",
+            empresa: "Empresa",
+            local: "Local",
+            link: "Link",
+          },
+          true,
+        );
       }
       drawRow(rows[i], false);
     }

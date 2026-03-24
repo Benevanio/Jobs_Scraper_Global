@@ -94,6 +94,7 @@ export function JobsTableCard({
               <TableHead>Palavra-chave</TableHead>
               <TableHead>Titulo</TableHead>
               <TableHead>Empresa</TableHead>
+              <TableHead>Fonte</TableHead>
               <TableHead>Local</TableHead>
               <TableHead>Link</TableHead>
             </TableRow>
@@ -104,6 +105,7 @@ export function JobsTableCard({
                 <TableCell>{job.palavra || "-"}</TableCell>
                 <TableCell className="font-medium">{job.titulo || "-"}</TableCell>
                 <TableCell>{job.empresa || "-"}</TableCell>
+                <TableCell>{job.source || "-"}</TableCell>
                 <TableCell>{job.local || "-"}</TableCell>
                 <TableCell>
                   {job.link ? (

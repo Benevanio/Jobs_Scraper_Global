@@ -18,18 +18,17 @@
     "lucide-react": "^0.577.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "rolldown": "^1.0.0-rc.10",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^3.2.4",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.1.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.1",
     "autoprefixer": "^10.4.27",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -38,6 +37,8 @@
     "jsdom": "^25.0.1",
     "postcss": "^8.5.8",
     "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.1",
     "vite": "^8.0.1"
   }
 }
