@@ -317,4 +317,210 @@ describe("scrapeAllSources", () => {
       'LinkedIn: 1 vagas para "React"',
     );
   });
+
+  it("mantém keyword e palavraChave do job quando já vierem preenchidos", async () => {
+    const adapters = [
+      {
+        sourceName: "LinkedIn",
+        search: vi.fn().mockResolvedValue([
+          {
+            titulo: "Dev",
+            empresa: "ACME",
+            local: "SP",
+            link: "https://site.com/job/1",
+            keyword: "CustomKeyword",
+            palavraChave: "CustomPalavra",
+          },
+        ]),
+      },
+    ];
+
+    const jobs = await scrapeAllSources(adapters, { keywords: ["React"] });
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0]).toMatchObject({
+      source: "LinkedIn",
+      keyword: "CustomKeyword",
+      palavraChave: "CustomPalavra",
+      palavra: "CustomKeyword",
+    });
+  });
+
+  it("usa unknown quando job.source e adapter.sourceName não existem", async () => {
+    const adapters = [
+      {
+        search: vi.fn().mockResolvedValue([
+          {
+            titulo: "Dev sem fonte",
+            empresa: "ACME",
+            local: "SP",
+            link: "https://site.com/job/1",
+          },
+        ]),
+      },
+    ];
+
+    const jobs = await scrapeAllSources(adapters, { keywords: ["React"] });
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].source).toBe("unknown");
+  });
+
+  it("usa jobUrl como chave de deduplicação quando link não existe", async () => {
+    const adapters = [
+      {
+        sourceName: "LinkedIn",
+        search: vi
+          .fn()
+          .mockResolvedValueOnce([
+            {
+              titulo: "Dev",
+              empresa: "ACME",
+              local: "SP",
+              jobUrl: "https://site.com/job/abc",
+            },
+          ])
+          .mockResolvedValueOnce([
+            {
+              titulo: "Dev",
+              empresa: "ACME",
+              local: "SP",
+              jobUrl: "https://site.com/job/abc",
+            },
+          ]),
+      },
+    ];
+
+    const jobs = await scrapeAllSources(adapters, {
+      keywords: ["React", "Node"],
+    });
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].keywords).toEqual(["React", "Node"]);
+  });
+
+  it("faz merge de existing.keywords com incoming.keywords ao deduplicar", async () => {
+    const adapters = [
+      {
+        sourceName: "LinkedIn",
+        search: vi
+          .fn()
+          .mockResolvedValueOnce([
+            {
+              titulo: "Dev",
+              empresa: "ACME",
+              local: "SP",
+              link: "https://site.com/job/1",
+              keywords: ["React", "Frontend"],
+            },
+          ])
+          .mockResolvedValueOnce([
+            {
+              titulo: "Dev",
+              empresa: "ACME",
+              local: "SP",
+              link: "https://site.com/job/1",
+              keywords: ["Node", "Backend"],
+            },
+          ]),
+      },
+    ];
+
+    const jobs = await scrapeAllSources(adapters, {
+      keywords: ["React", "Node"],
+    });
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].keywords).toEqual(["React", "Frontend", "Node", "Backend"]);
+  });
+
+  it("usa a chave fallback na deduplicação mesmo quando não há link nem jobUrl", async () => {
+    const adapters = [
+      {
+        sourceName: "Fonte X",
+        search: vi
+          .fn()
+          .mockResolvedValueOnce([
+            {
+              titulo: "",
+              empresa: "",
+              local: "",
+              source: "Fonte X",
+              link: "",
+              jobUrl: "",
+            },
+          ])
+          .mockResolvedValueOnce([
+            {
+              titulo: "",
+              empresa: "",
+              local: "",
+              source: "Fonte X",
+              link: "",
+              jobUrl: "",
+            },
+          ]),
+      },
+    ];
+
+    const jobs = await scrapeAllSources(adapters, {
+      keywords: ["React", "Node"],
+    });
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0]).toMatchObject({
+      source: "Fonte X",
+      keyword: "React",
+      palavraChave: "React",
+      palavra: "React",
+      keywords: ["React", "Node"],
+      titulo: "",
+      empresa: "",
+      local: "",
+      link: "",
+      jobUrl: "",
+    });
+  });
+
+  it("trata erro desconhecido quando o adapter rejeita com valor que não é Error", async () => {
+    const adapters = [
+      {
+        sourceName: "Fonte Estranha",
+        search: vi.fn().mockRejectedValue("falhou estranho"),
+      },
+    ];
+
+    const jobs = await scrapeAllSources(adapters, { keywords: ["React"] });
+
+    expect(jobs).toEqual([]);
+    expect(mocks.logWarnMock).toHaveBeenCalledWith(
+      'Fonte Estranha: falha ao buscar "React" -> erro desconhecido',
+    );
+  });
+
+  it("gera palavra a partir de palavraChave quando keyword não existe", async () => {
+    const adapters = [
+      {
+        sourceName: "Fonte Y",
+        search: vi.fn().mockResolvedValue([
+          {
+            titulo: "Dev",
+            empresa: "ACME",
+            local: "SP",
+            link: "https://site.com/job/1",
+            palavraChave: "Especial",
+          },
+        ]),
+      },
+    ];
+
+    const jobs = await scrapeAllSources(adapters, { keywords: ["React"] });
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0]).toMatchObject({
+      keyword: "Especial",
+      palavraChave: "Especial",
+      palavra: "Especial",
+    });
+  });
 });
