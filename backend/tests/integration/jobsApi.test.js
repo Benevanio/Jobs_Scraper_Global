@@ -2,12 +2,26 @@ import { mkdtempSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import request from "supertest";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import XLSX from "xlsx";
+
+const mocks = vi.hoisted(() => ({
+  run: vi.fn(),
+}));
+
+vi.mock("../../src/app.js", () => ({
+  run: mocks.run,
+}));
+
 import { createJobsApiApp } from "../../src/jobsApiApp.js";
 
 describe("jobs API", () => {
   let tmpDir;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.run.mockResolvedValue(undefined);
+  });
 
   afterEach(() => {
     tmpDir = undefined;
@@ -62,5 +76,68 @@ describe("jobs API", () => {
     const app = createJobsApiApp({ outputDir: tmpDir });
     const res = await request(app).get("/api/jobs").query({ file: "nao-existe.xlsx" }).expect(404);
     expect(res.body.message).toBe("Arquivo solicitado nao encontrado.");
+  });
+
+  it("POST /api/scraper/run executa scraper e retorna metadados", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.json_to_sheet([{ titulo: "x" }]);
+    XLSX.utils.book_append_sheet(workbook, sheet, "Vagas");
+    XLSX.writeFile(workbook, join(tmpDir, "resultado.xlsx"));
+
+    const app = createJobsApiApp({ outputDir: tmpDir });
+    const res = await request(app).post("/api/scraper/run").expect(200);
+
+    expect(mocks.run).toHaveBeenCalledTimes(1);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.file).toBe("resultado.xlsx");
+    expect(res.body.totalFiles).toBe(1);
+  });
+
+  it("POST /api/scraper/run retorna 409 quando ja existe execucao ativa", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    let finishRun;
+    mocks.run.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishRun = resolve;
+        }),
+    );
+
+    const app = createJobsApiApp({ outputDir: tmpDir });
+
+    const firstRequest = new Promise((resolve, reject) => {
+      request(app)
+        .post("/api/scraper/run")
+        .end((error, response) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(response);
+        });
+    });
+
+    await vi.waitFor(() => {
+      expect(mocks.run).toHaveBeenCalledTimes(1);
+    });
+
+    const conflict = await request(app).post("/api/scraper/run").expect(409);
+    expect(conflict.body.message).toBe("O scraper ja esta em execucao.");
+
+    finishRun();
+    const firstResult = await firstRequest;
+    expect(firstResult.status).toBe(200);
+  });
+
+  it("POST /api/scraper/run retorna 500 quando scraper falha", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    mocks.run.mockRejectedValue(new Error("falha no scraper"));
+
+    const app = createJobsApiApp({ outputDir: tmpDir });
+    const res = await request(app).post("/api/scraper/run").expect(500);
+
+    expect(res.body.message).toBe("Erro ao executar o scraper.");
+    expect(res.body.error).toBe("falha no scraper");
   });
 });

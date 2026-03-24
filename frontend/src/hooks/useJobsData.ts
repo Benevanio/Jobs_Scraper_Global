@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import { fetchJobFiles, fetchJobsByFile } from "@/services/jobsService";
+import { fetchJobFiles, fetchJobsByFile, runScraperRequest } from "@/services/jobsService";
 import type { Job, JobFile, JobsMeta } from "@/types/jobs";
+import { useCallback, useEffect, useState } from "react";
 
 const EMPTY_META: JobsMeta = { file: "", modifiedAt: null, total: 0 };
 
@@ -10,7 +10,14 @@ export function useJobsData() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [meta, setMeta] = useState<JobsMeta>(EMPTY_META);
   const [loading, setLoading] = useState(false);
+  const [scraping, setScraping] = useState(false);
   const [error, setError] = useState("");
+
+  const loadFiles = useCallback(async () => {
+    const foundFiles = await fetchJobFiles();
+    setFiles(foundFiles);
+    return foundFiles;
+  }, []);
 
   const loadJobs = useCallback(async (fileName: string) => {
     setLoading(true);
@@ -36,8 +43,7 @@ export function useJobsData() {
 
   useEffect(() => {
     async function initializeFiles() {
-      const foundFiles = await fetchJobFiles();
-      setFiles(foundFiles);
+      const foundFiles = await loadFiles();
       if (foundFiles[0]?.file) {
         setSelectedFile(foundFiles[0].file);
       }
@@ -46,13 +52,46 @@ export function useJobsData() {
     initializeFiles().catch(() => {
       setError("Nao foi possivel listar arquivos .xlsx da pasta output.");
     });
-  }, []);
+  }, [loadFiles]);
 
   useEffect(() => {
     if (selectedFile) {
       loadJobs(selectedFile);
+      return;
     }
+
+    setJobs([]);
+    setMeta(EMPTY_META);
   }, [selectedFile, loadJobs]);
+
+  const triggerScraper = useCallback(async () => {
+    setScraping(true);
+    setError("");
+
+    try {
+      await runScraperRequest();
+      const foundFiles = await loadFiles();
+      const nextFile = foundFiles[0]?.file ?? "";
+
+      if (!nextFile) {
+        setSelectedFile("");
+        setJobs([]);
+        setMeta(EMPTY_META);
+        return;
+      }
+
+      if (nextFile !== selectedFile) {
+        setSelectedFile(nextFile);
+        return;
+      }
+
+      await loadJobs(nextFile);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro inesperado ao executar o scraper.");
+    } finally {
+      setScraping(false);
+    }
+  }, [loadFiles, loadJobs, selectedFile]);
 
   return {
     files,
@@ -61,7 +100,9 @@ export function useJobsData() {
     jobs,
     meta,
     loading,
+    scraping,
     error,
     loadJobs,
+    triggerScraper,
   };
 }

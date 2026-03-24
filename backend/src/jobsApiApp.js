@@ -3,6 +3,7 @@ import express from "express";
 import { existsSync, mkdirSync, readdirSync, statSync } from "fs";
 import path from "path";
 import XLSX from "xlsx";
+import { run as runScraper } from "./app.js";
 
 /**
  * @param {{ outputDir?: string }} [options]
@@ -10,6 +11,7 @@ import XLSX from "xlsx";
 export function createJobsApiApp(options = {}) {
   const outputDir = options.outputDir ?? path.resolve(process.cwd(), "output");
   const app = express();
+  let activeScraperRun = null;
 
   app.use(cors());
 
@@ -96,6 +98,34 @@ export function createJobsApiApp(options = {}) {
         message: "Erro ao ler arquivo de vagas.",
         error: error?.message || "Erro desconhecido",
       });
+    }
+  });
+
+  app.post("/api/scraper/run", async (_req, res) => {
+    if (activeScraperRun) {
+      return res.status(409).json({
+        message: "O scraper ja esta em execucao.",
+      });
+    }
+
+    try {
+      activeScraperRun = runScraper();
+      await activeScraperRun;
+
+      const files = listXlsxFiles();
+      return res.json({
+        ok: true,
+        file: files[0]?.file ?? null,
+        modifiedAt: files[0]?.modifiedAt ?? null,
+        totalFiles: files.length,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro ao executar o scraper.",
+        error: error?.message || "Erro desconhecido",
+      });
+    } finally {
+      activeScraperRun = null;
     }
   });
 

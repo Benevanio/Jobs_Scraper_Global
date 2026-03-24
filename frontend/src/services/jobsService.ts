@@ -48,3 +48,14 @@ export async function fetchJobsByFile(fileName: string): Promise<JobsResponse> {
     total: Number(payload.total || 0),
   };
 }
+
+export async function runScraperRequest(): Promise<void> {
+  const response = await fetch("/api/scraper/run", {
+    method: "POST",
+  });
+  const payload = (await response.json()) as Record<string, unknown>;
+
+  if (!response.ok) {
+    throw buildError(readMessage(payload), "Falha ao executar o scraper.");
+  }
+}

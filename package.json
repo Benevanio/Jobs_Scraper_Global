@@ -1,6 +1,10 @@
 {
   "name": "vagas-full-monorepo",
+  "version": "1.0.0",
+  "description": "Aplicativo desktop para buscar e visualizar vagas com Electron, React e Node.js.",
+  "author": "Bene Tesla Dev",
   "private": true,
+  "main": "electron/main.js",
   "workspaces": [
     "frontend",
     "backend"
@@ -13,10 +17,60 @@
     "scraper:watch": "npm run scraper:watch --workspace=backend",
     "test": "npm run test --workspace=backend",
     "test:coverage": "npm run test:coverage --workspace=frontend && npm run test:coverage --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
     "build": "npm run build --workspace=frontend",
-    "validate": "npm run test --workspace=backend && npm run lint --workspace=frontend && npm run build --workspace=frontend"
+    "validate": "npm run test --workspace=backend && npm run lint --workspace=frontend && npm run build --workspace=frontend",
+    "electron": "electron .",
+    "electron:dev": "npm run build:frontend && electron .",
+    "dist": "npm run build:frontend && electron-builder"
+  },
+  "dependencies": {
+    "axios": "^1.13.6",
+    "cheerio": "^1.2.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "pdfkit": "^0.18.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.benetesla.vagas-full",
+    "productName": "Vagas Full",
+    "asar": false,
+    "files": [
+      "electron/**/*",
+      "backend/src/**/*",
+      "backend/package.json",
+      "frontend/dist/**/*",
+      "!**/node_modules/.bin",
+      "!**/*.{test,spec}.{js,ts}",
+      "!**/tests/**",
+      "!**/coverage/**"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist-electron"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Vagas Full"
+    }
   }
 }
