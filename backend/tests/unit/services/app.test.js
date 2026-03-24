@@ -31,7 +31,7 @@ vi.mock("../../../src/exporter.js", () => ({
 }));
 vi.mock("../../../src/logger.js", () => ({ logInfo: mocks.logInfoMock }));
 
-import { run } from "../../../src/runner.js";
+import { run } from "../../../src/app.js";
 
 describe("run", () => {
   it("orquestra coleta e exportacao", async () => {

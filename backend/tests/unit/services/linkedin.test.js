@@ -48,7 +48,7 @@ describe("linkedinAdapter", () => {
 
     expect(jobs).toHaveLength(1);
     expect(jobs[0]).toMatchObject({
-      source: "linkedin",
+      source: "LinkedIn",
       keyword: "React",
       titulo: "Dev 1",
       empresa: "ACME",
