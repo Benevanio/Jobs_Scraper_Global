@@ -114,6 +114,66 @@ npm run dev:backend
 - `npm run test`: testes com Vitest
 - `npm run test:coverage`: coverage com Vitest
 
+## Aplicativo Desktop (Electron)
+
+O projeto tambem pode ser executado como app desktop Windows, sem precisar subir Docker no computador do usuario final.
+
+### Como o app funciona
+
+- O Electron inicia o backend internamente na porta `3001`
+- A UI React e carregada dentro da janela desktop
+- O botao **Buscar vagas** dispara o scraper via API (`POST /api/scraper/run`)
+- Os arquivos de saida (XLSX/PDF) sao salvos no diretorio de dados do usuario
+
+### Estrutura principal
+
+```text
+electron/
+├─ main.js
+├─ preload.js
+└─ loading.html
+```
+
+### Rodar em modo desktop (desenvolvimento)
+
+1. Instale dependencias na raiz:
+
+```bash
+npm install
+```
+
+2. Gere o build do frontend:
+
+```bash
+npm run build:frontend
+```
+
+3. Inicie o app Electron:
+
+```bash
+npm run electron
+```
+
+Opcional (atalho para build + electron):
+
+```bash
+npm run electron:dev
+```
+
+### Gerar instalador .exe para distribuir
+
+Execute na raiz do monorepo:
+
+```bash
+npm run dist
+```
+
+O instalador sera gerado em `dist-electron/` (target `nsis`).
+
+### Observacao para Windows (build local)
+
+Se o `electron-builder` falhar com erro de symlink (winCodeSign), habilite o **Modo de Desenvolvedor** no Windows ou rode o terminal como Administrador antes de executar `npm run dist`.
+
 ## Testes e cobertura
 
 Estrutura de testes:
