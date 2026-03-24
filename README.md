@@ -116,7 +116,9 @@ npm run dev:backend
 
 ## Aplicativo Desktop (Electron)
 
-O projeto tambem pode ser executado como app desktop Windows, sem precisar subir Docker no computador do usuario final.
+> **Para testadores:** o executavel `.exe` e o unico arquivo necessario para usar o app. Nao e preciso instalar Node.js, Docker ou qualquer dependencia adicional — somente ter o **Google Chrome** ou **Microsoft Edge** instalado na maquina.
+
+O projeto pode ser executado como app desktop Windows, sem precisar subir Docker no computador do usuario final.
 
 ### Como o app funciona
 
@@ -124,6 +126,16 @@ O projeto tambem pode ser executado como app desktop Windows, sem precisar subir
 - A UI React e carregada dentro da janela desktop
 - O botao **Buscar vagas** dispara o scraper via API (`POST /api/scraper/run`)
 - Os arquivos de saida (XLSX/PDF) sao salvos no diretorio de dados do usuario
+
+### Para testadores — usando o instalador
+
+1. Baixe o arquivo `Vagas Full Setup X.X.X.exe` disponibilizado pelo time
+2. Execute o instalador e siga os passos (Next → Install → Finish)
+3. Abra o atalho **Vagas Full** criado na area de trabalho
+4. Clique em **Buscar vagas** para disparar o scraper
+5. Aguarde a conclusao — os resultados sao exibidos automaticamente na tabela
+
+> **Requisito:** Chrome ou Edge instalado. O scraper utiliza o browser do sistema via `puppeteer-core`.
 
 ### Estrutura principal
 
@@ -168,7 +180,7 @@ Execute na raiz do monorepo:
 npm run dist
 ```
 
-O instalador sera gerado em `dist-electron/` (target `nsis`).
+O instalador sera gerado em `dist-electron/Vagas Full Setup X.X.X.exe`.
 
 ### Observacao para Windows (build local)
 
