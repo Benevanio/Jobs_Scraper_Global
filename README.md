@@ -2,6 +2,18 @@
 
 Uma plataforma interna para transformar arquivos XLSX de vagas em uma experiencia visual rapida, filtravel e pronta para decisao.
 
+
+
+## Diretriz de Design (Obrigatoria)
+
+> **ATENCAO MAXIMA:** o padrao visual oficial da aplicacao deve seguir este Figma:
+> https://www.figma.com/design/gollJBtK8PGkffNN4zk9t9/Painel-Dev---releitura?node-id=0-1&p=f&t=zU8zrFzPsNPxZ3qU-0
+
+Todas as novas telas, componentes, ajustes de layout, espacamento, tipografia, cores e estados de interacao devem manter o mesmo designer/padrao visual.
+
+Nao sera considerado concluido nenhum ajuste de UI/UX que fuja do padrao definido nesse design.
+
+
 O projeto esta organizado em monorepo e conecta duas frentes:
 
 - frontend: dashboard em React + Vite + Tailwind
