@@ -32,8 +32,8 @@ describe("getConfig", () => {
 
   it("usa caminhos padrao em output/ para Excel e PDF", () => {
     const config = getConfig();
-    expect(config.outputFile).toBe("output/vagas_linkedin.xlsx");
-    expect(config.pdfFile).toBe("output/vagas_linkedin.pdf");
+    expect(config.outputFile).toBe("output/vagas_remoto.xlsx");
+    expect(config.pdfFile).toBe("output/vagas_remoto.pdf");
   });
 
   it("permite sobrescrever arquivos de saida via env", () => {
