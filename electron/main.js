@@ -40,7 +40,7 @@ function getFrontendDistPath() {
 }
 
 function getBackendServerPath() {
-  return path.join(getAppRootPath(), 'backend', 'src', 'server.js');
+  return path.join(getAppRootPath(), 'backend', 'dist', 'src', 'server.js');
 }
 
 // userData is the OS user-data directory – writable even under Program Files,

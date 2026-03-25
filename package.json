@@ -18,11 +18,12 @@
     "test": "npm run test --workspace=backend",
     "test:coverage": "npm run test:coverage --workspace=frontend && npm run test:coverage --workspace=backend",
     "build:frontend": "npm run build --workspace=frontend",
-    "build": "npm run build --workspace=frontend",
-    "validate": "npm run test --workspace=backend && npm run lint --workspace=frontend && npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "build": "npm run build:backend && npm run build:frontend",
+    "validate": "npm run test --workspace=backend && npm run build:backend && npm run lint --workspace=frontend && npm run build --workspace=frontend",
     "electron": "electron .",
-    "electron:dev": "npm run build:frontend && electron .",
-    "dist": "npm run build:frontend && electron-builder"
+    "electron:dev": "npm run build && electron .",
+    "dist": "npm run build && electron-builder"
   },
   "dependencies": {
     "axios": "^1.13.6",
@@ -34,6 +35,8 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@esbuild/win32-x64": "^0.27.4",
+    "@rollup/rollup-win32-x64-msvc": "^4.60.0",
     "concurrently": "^9.2.1",
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0"
@@ -44,7 +47,7 @@
     "asar": false,
     "files": [
       "electron/**/*",
-      "backend/src/**/*",
+      "backend/dist/**/*",
       "backend/package.json",
       "frontend/dist/**/*",
       "!**/node_modules/.bin",
@@ -60,7 +63,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },

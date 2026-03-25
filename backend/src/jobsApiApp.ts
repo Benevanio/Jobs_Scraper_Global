@@ -8,10 +8,7 @@ import { getConfig } from "./config.js";
 import { searchJobsWithCache } from "./pipeline/searchJobsWithCache.js";
 import { sources } from "./sources/index.js";
 
-/**
- * @param {{ outputDir?: string }} [options]
- */
-export function createJobsApiApp(options = {}) {
+export function createJobsApiApp(options: { outputDir?: string } = {}) {
   const outputDir = options.outputDir ?? path.resolve(process.cwd(), "output");
   const app = express();
   let activeScraperRun = null;

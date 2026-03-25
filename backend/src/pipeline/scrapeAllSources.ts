@@ -1,6 +1,32 @@
 import { logInfo, logWarn } from "../logger.js";
 
-function normalizeJob(job, keyword, adapter) {
+interface Job {
+  link?: string;
+  jobUrl?: string;
+  source?: string;
+  titulo?: string;
+  title?: string;
+  empresa?: string;
+  company?: string;
+  local?: string;
+  location?: string;
+  keyword?: string;
+  palavraChave?: string;
+  keywords?: string[];
+  palavra?: string;
+  [key: string]: unknown;
+}
+
+interface Adapter {
+  sourceName: string;
+  search(keyword: string, config: unknown): Promise<Job[]>;
+}
+
+interface Config {
+  keywords: string[];
+}
+
+function normalizeJob(job: Job, keyword: string, adapter: Adapter): Job {
   return {
     ...job,
     source: job.source || adapter.sourceName || "unknown",
@@ -10,7 +36,7 @@ function normalizeJob(job, keyword, adapter) {
   };
 }
 
-function mergeKeywords(existing, incoming) {
+function mergeKeywords(existing: Job, incoming: Job): Job {
   const keywords = new Set([
     ...(existing.keywords || []),
     ...(existing.keyword ? [existing.keyword] : []),
@@ -32,11 +58,11 @@ function mergeKeywords(existing, incoming) {
   };
 }
 
-function dedupeJobs(jobs) {
-  const unique = new Map();
+function dedupeJobs(jobs: Job[]): Job[] {
+  const unique = new Map<string, Job>();
 
   for (const job of jobs) {
-    const key =
+    const key: string =
       job.link ||
       job.jobUrl ||
       `${job.source}-${job.titulo || job.title}-${job.empresa || job.company}-${job.local || job.location}`;
@@ -44,7 +70,7 @@ function dedupeJobs(jobs) {
     if (!key) continue;
 
     if (unique.has(key)) {
-      const existing = unique.get(key);
+      const existing = unique.get(key)!;
       unique.set(key, mergeKeywords(existing, job));
       continue;
     }

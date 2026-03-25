@@ -1,4 +1,6 @@
 export class MemoryCache {
+  store;
+
   constructor() {
     this.store = new Map();
   }

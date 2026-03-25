@@ -31,7 +31,7 @@ function cleanJobUrl(url) {
 
 export function exportToPDF(rows, outputFile) {
   ensureParentDir(outputFile);
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     const doc = new PDFDocument({
       margin: 30,
       size: "A4",
@@ -41,7 +41,9 @@ export function exportToPDF(rows, outputFile) {
 
     doc.pipe(stream);
     stream.on("error", reject);
-    stream.on("finish", resolve);
+    stream.on("finish", () => {
+      resolve();
+    });
 
     // Título
     doc

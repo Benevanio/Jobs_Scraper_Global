@@ -124,8 +124,9 @@ export const linkedinAdapter = {
         jobs = await fetchJobsChunk(keyword, config, start);
       } catch (error) {
         logWarn(
-          `LinkedIn: falha HTTP na busca para "${keyword}" (start=${start})`,
-          error instanceof Error ? error.message : error
+          `LinkedIn: falha HTTP na busca para "${keyword}" (start=${start}) - ${
+            error instanceof Error ? error.message : String(error)
+          }`
         );
       }
 

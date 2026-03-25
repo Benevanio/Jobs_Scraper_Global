@@ -3,14 +3,31 @@ import { cache } from "../cache/cache.js";
 import { withRequestDedup } from "./requestDedup.js";
 import { scrapeAllSources } from "./scrapeAllSources.js";
 
-function normalizeKeywords(keywords) {
+interface SearchConfig {
+  keywords: string[];
+  searchLocation?: string;
+  searchGeoId?: string;
+  searchLanguage?: string;
+  jobTypes?: string;
+  timeFilter?: string;
+  remoteOnly?: boolean;
+}
+
+interface CacheResult {
+  jobs: unknown[];
+  total: number;
+  cachedAt: string;
+  fromCache: boolean;
+}
+
+function normalizeKeywords(keywords: string[]): string[] {
   return [...keywords]
     .map((k) => String(k).trim().toLowerCase())
     .filter(Boolean)
     .sort();
 }
 
-function buildCacheKey(config) {
+function buildCacheKey(config: SearchConfig) {
   return [
     "jobs",
     normalizeKeywords(config.keywords).join(","),

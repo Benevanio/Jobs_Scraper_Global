@@ -1,6 +1,6 @@
 const inflight = new Map();
 
-export async function withRequestDedup(key, fn) {
+export async function withRequestDedup(key: string, fn: { (): Promise<any>; (): Promise<any>; }) {
   if (inflight.has(key)) {
     return inflight.get(key);
   }
