@@ -3,6 +3,33 @@
 Uma plataforma interna para transformar arquivos XLSX de vagas em uma experiencia visual rapida, filtravel e pronta para decisao.
 
 
+---
+
+## ⚠️ IMPORTANTE: Fluxo de Development e Branching
+
+> **Padrão de Desenvolvimento - LEIA ATENTAMENTE**
+> 
+> O fluxo correto de trabalho deve seguir EXATAMENTE essa sequência:
+> 
+> 1. **Abrir uma Issue de Melhorias** - Descreva a feature/bug a implementar
+> 2. **Criar branch `feature/` a partir de `master`** - Nomenclatura: `feature/numero-da-issue-descricao`
+> 3. **Desenvolver e testar localmente** - Faça commits regulares na feature
+> 4. **Abrir Pull Request** - Apontar a feature para a branch `develop` (NÃO para master)
+> 5. **Code Review e Merge em `develop`** - Após aprovação, merge e teste na develop
+> 6. **Abrir PR de `develop` para `master`** - Somente features testadas e aprovadas
+> 7. **Merge em `master`** - Release final da feature
+> 
+> **Resumo das branches:**
+> - `master`: Produção (releases finais e estáveis)
+> - `develop`: Staging (features em validação)
+> - `feature/*`: Branches de desenvolvimento (sempre partir de master)
+> 
+> ⛔ **NÃO faça:**
+> - Commits diretos em master ou develop
+> - Pull requests diretamente para master (primeira PR deve apontar para develop)
+> - Features sem issue associada
+
+---
 
 ## Diretriz de Design (Obrigatoria)
 
@@ -211,7 +238,6 @@ Meta minima de cobertura:
 - statements >= 80%
 - functions >= 80%
 - branches >= 80%
-
 Comandos de cobertura:
 
 ```bash
@@ -237,7 +263,6 @@ Subir frontend + backend:
 docker compose up --build
 ```
 
-Subir em background:
 
 ```bash
 docker compose up --build -d
