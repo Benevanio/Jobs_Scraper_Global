@@ -2,7 +2,6 @@ import { JobsFiltersCard } from "@/components/JobsFiltersCard";
 import { JobsHeaderCard } from "@/components/JobsHeaderCard";
 import { JobsTableCard } from "@/components/JobsTableCard";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useJobsData } from "@/hooks/useJobsData";
 import { useJobsFiltering } from "@/hooks/useJobsFiltering";
 import { useJobsPagination } from "@/hooks/useJobsPagination";
@@ -72,18 +71,7 @@ function App() {
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(236,195,117,0.35),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(92,151,191,0.28),transparent_35%),radial-gradient(circle_at_50%_95%,rgba(201,120,99,0.22),transparent_40%)] dark:bg-[radial-gradient(circle_at_20%_15%,rgba(240,180,95,0.18),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(92,151,191,0.18),transparent_35%),radial-gradient(circle_at_50%_95%,rgba(201,120,99,0.15),transparent_40%)]" />
 
       <section className="mx-auto flex w-full flex-col gap-6">
-        <JobsHeaderCard
-          meta={meta}
-          actions={
-            <>
-              <Button onClick={handleScraper} disabled={loading || scraping}>
-                <RefreshCcw className={`h-4 w-4 ${scraping ? "animate-spin" : ""}`} />
-                {scraping ? "Buscando vagas..." : "Buscar vagas"}
-              </Button>
-              {/* <ThemeToggle theme={resolvedTheme} onToggle={toggleTheme} /> */}
-            </>
-          }
-        />
+        <JobsHeaderCard />
 
         <JobsFiltersCard
           search={search}
@@ -96,6 +84,17 @@ function App() {
           files={files}
           loading={loading || scraping}
           onRefresh={() => loadJobs(selectedFile)}
+          meta={meta}
+          actions={
+            <>
+              <Button onClick={handleScraper} disabled={loading || scraping}>
+                <RefreshCcw
+                  className={`h-4 w-4 ${scraping ? "animate-spin" : ""}`}
+                />
+                {scraping ? "Buscando vagas..." : "Buscar vagas"}
+              </Button>
+            </>
+          }
         />
 
         <JobsTableCard

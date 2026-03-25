@@ -35,7 +35,7 @@ export function JobsTableCard({
   onPageSizeChange,
 }: JobsTableCardProps) {
   return (
-    <Card className="border-border/70 bg-card/90 backdrop-blur dark:bg-card/95">
+    <Card className="border-border/70 bg-card/90 backdrop-blur dark:bg-card/95 mb-4">
       <CardHeader>
         <CardTitle className="text-lg">Vagas Encontradas</CardTitle>
         <CardDescription>
@@ -44,7 +44,7 @@ export function JobsTableCard({
       </CardHeader>
       <CardContent>
         {error ? (
-          <div className="rounded-md border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
+          <div className="rounded-md border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300 mb-4">
             {error}
           </div>
         ) : null}
@@ -91,21 +91,19 @@ export function JobsTableCard({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Palavra-chave</TableHead>
               <TableHead>Titulo</TableHead>
               <TableHead>Empresa</TableHead>
-              <TableHead>Fonte</TableHead>
               <TableHead>Local</TableHead>
               <TableHead>Link</TableHead>
+              <TableHead>Palavra-chave</TableHead>
+              <TableHead>Fonte</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedJobs.map((job, index) => (
               <TableRow key={`${job.link || `${job.titulo || "vaga"}-${index}`}-${index}`}>
-                <TableCell>{job.palavra || "-"}</TableCell>
                 <TableCell className="font-medium">{job.titulo || "-"}</TableCell>
                 <TableCell>{job.empresa || "-"}</TableCell>
-                <TableCell>{job.source || "-"}</TableCell>
                 <TableCell>{job.local || "-"}</TableCell>
                 <TableCell>
                   {job.link ? (
@@ -113,7 +111,7 @@ export function JobsTableCard({
                       href={job.link}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-primary underline-offset-4 hover:underline"
+                      className="text-primary underline-offset-4 hover:underline dark:text-[#14AE5C]"
                     >
                       Abrir vaga
                     </a>
@@ -121,6 +119,8 @@ export function JobsTableCard({
                     "-"
                   )}
                 </TableCell>
+                <TableCell>{job.palavra || "-"}</TableCell>
+                <TableCell>{job.source || "-"}</TableCell>
               </TableRow>
             ))}
 
