@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: vagas-backend
-    command: ["node", "backend/index.js"]
+    command: ["node", "backend/src/server.js"] 
     env_file:
       - ./backend/.env
     environment:
@@ -20,6 +20,7 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
     container_name: vagas-frontend
+    command: npm run dev --workspace=frontend -- --host 0.0.0.0
     environment:
       - VITE_API_PROXY_TARGET=http://backend:3001
     ports:
