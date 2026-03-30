@@ -45,9 +45,9 @@ describe("getConfig", () => {
   });
 
   it("parseia SEARCH_KEYWORDS em lista", () => {
-    vi.stubEnv("SEARCH_KEYWORDS", "UX Designer, Product Owner ");
+    vi.stubEnv("SEARCH_KEYWORDS", "Java","Spring","RabbitMQ","Docker");
     const config = getConfig();
-    expect(config.keywords).toEqual(["UX Designer", "Product Owner"]);
+    expect(config.keywords).toEqual(["Java","Spring","RabbitMQ","Docker"]);
   });
 
   it("rejeita TIME_FILTER invalido e usa fallback", () => {

@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from "fs";
+import path from "path";
+
 const DEFAULT_KEYWORDS = [  
   "Java",
   "JavaScript",
@@ -33,16 +36,30 @@ function parseNumber(value, fallback) {
 }
 
 function parseKeywords(value) {
-  if (!value) {
-    return DEFAULT_KEYWORDS;
+  // Tenta pegar do arquivo environment.json
+  try {
+    const envPath = path.resolve(process.cwd(), "src", "db", "environment.json");
+    if (existsSync(envPath)) {
+      const data = JSON.parse(readFileSync(envPath, "utf-8"));
+      if (Array.isArray(data.KEYWORDS) && data.KEYWORDS.length > 0) {
+        return data.KEYWORDS;
+      }
+    }
+  } catch (err) {
+    // Se falhar, fallback
   }
 
-  const keywords = value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
+  // Tenta pegar da variavel de ambiente
+  if (value) {
+    const keywords = value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+    if (keywords.length > 0) return keywords;
+  }
 
-  return keywords.length > 0 ? keywords : DEFAULT_KEYWORDS;
+  // Fallback para as keywords padrao
+  return DEFAULT_KEYWORDS;
 }
 
 function parseTimeFilter(value, fallback) {

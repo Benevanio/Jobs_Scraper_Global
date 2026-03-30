@@ -1,4 +1,4 @@
-import { fetchJobFiles, fetchJobsByFile } from "@/services/jobsService";
+import { fetchJobFiles, fetchJobsByFile, fetchKeywords, saveKeywords } from "@/services/jobsService";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("jobsService", () => {
@@ -98,5 +98,70 @@ describe("jobsService", () => {
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, json: async () => ({}) })));
 
     await expect(fetchJobsByFile("vagas.xlsx")).rejects.toThrow("Falha ao carregar vagas.");
+  });
+
+  it("retorna lista de keywords", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ keywords: ["react", "typescript"] }),
+      })),
+    );
+
+    const keywords = await fetchKeywords();
+    expect(keywords).toEqual(["react", "typescript"]);
+  });
+
+  it("retorna lista vazia quando payload nao possui keywords array", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ keywords: null }),
+      })),
+    );
+
+    const keywords = await fetchKeywords();
+    expect(keywords).toEqual([]);
+  });
+
+  it("lanca erro ao falhar no carregamento das keywords", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        json: async () => ({ message: "erro-api" }),
+      })),
+    );
+
+    await expect(fetchKeywords()).rejects.toThrow("erro-api");
+  });
+
+  it("salva keywords com sucesso", async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ success: true }),
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await saveKeywords(["node", "vitest"]);
+    expect(fetchMock).toHaveBeenCalledWith("/api/keywords", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ keywords: ["node", "vitest"] }),
+    });
+  });
+
+  it("lanca erro ao falhar no salvamento das keywords", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        json: async () => ({ message: "erro-save" }),
+      })),
+    );
+
+    await expect(saveKeywords([])).rejects.toThrow("erro-save");
   });
 });

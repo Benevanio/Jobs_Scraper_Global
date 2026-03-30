@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { existsSync, mkdirSync, readdirSync, statSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";
 import XLSX from "xlsx";
 import { run as runScraper } from "./app.js";
@@ -17,6 +17,7 @@ export function createJobsApiApp(options = {}) {
   let activeScraperRun = null;
 
   app.use(cors());
+  app.use(express.json());
 
   function listXlsxFiles() {
     // Garante que a pasta exista tambem no primeiro boot em ambiente Docker.
@@ -127,6 +128,66 @@ export function createJobsApiApp(options = {}) {
       });
     }
   });
+
+  app.post("/api/keywords", (req, res) => {
+    try {
+      const { keywords } = req.body;
+
+      if (!Array.isArray(keywords)) {
+        return res.status(400).json({
+          message: "O campo 'keywords' deve ser um array de strings.",
+        });
+      }
+
+      const envPath = path.resolve(process.cwd(), "src", "db", "environment.json");
+      let envData = { KEYWORDS: [] };
+
+      if (existsSync(envPath)) {
+        try {
+          envData = JSON.parse(readFileSync(envPath, "utf-8"));
+        } catch (e) {
+          // Se o arquivo estiver corrompido, reinicia com o objeto padrao
+        }
+      }
+
+      envData.KEYWORDS = keywords;
+      writeFileSync(envPath, JSON.stringify(envData, null, 2), "utf-8");
+
+      return res.json({
+        ok: true,
+        message: "Keywords atualizadas com sucesso.",
+        keywords: envData.KEYWORDS,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro ao salvar keywords.",
+        error: error?.message || "Erro desconhecido",
+      });
+    }
+  });
+
+  app.get("/api/keywords", (req, res) => {
+  try {
+    const envPath = path.resolve(process.cwd(), "src", "db", "environment.json");
+    
+    if (!existsSync(envPath)) {
+      return res.json({ keywords: [] });
+    }
+
+    const fileContent = readFileSync(envPath, "utf-8");
+    const envData = JSON.parse(fileContent);
+
+    return res.json({
+      ok: true,
+      keywords: envData.KEYWORDS || [],
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Erro ao buscar keywords.",
+      error: error?.message || "Erro desconhecido",
+    });
+  }
+});
 
   app.post("/api/scraper/run", async (_req, res) => {
     if (activeScraperRun) {

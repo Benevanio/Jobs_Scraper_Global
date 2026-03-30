@@ -49,6 +49,32 @@ export async function fetchJobsByFile(fileName: string): Promise<JobsResponse> {
   };
 }
 
+export async function fetchKeywords(): Promise<string[]> {
+  const response = await fetch("/api/keywords");
+  const payload = (await response.json()) as { keywords?: unknown } & Record<string, unknown>;
+
+  if (!response.ok) {
+    throw buildError(readMessage(payload), "Falha ao carregar keywords.");
+  }
+
+  return Array.isArray(payload.keywords) ? payload.keywords : [];
+}
+
+export async function saveKeywords(keywords: string[]): Promise<void> {
+  const response = await fetch("/api/keywords", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ keywords }),
+  });
+  const payload = (await response.json()) as Record<string, unknown>;
+
+  if (!response.ok) {
+    throw buildError(readMessage(payload), "Falha ao salvar keywords.");
+  }
+}
+
 export async function runScraperRequest(): Promise<void> {
   const response = await fetch("/api/scraper/run", {
     method: "POST",

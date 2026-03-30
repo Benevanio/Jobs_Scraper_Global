@@ -33,14 +33,14 @@ describe("jobs API", () => {
     const res = await request(app).get("/api/health").expect(200);
     expect(res.body).toEqual({ ok: true });
   });
-
+  
   it("GET /api/jobs/files retorna lista vazia sem xlsx", async () => {
     tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
     const app = createJobsApiApp({ outputDir: tmpDir });
     const res = await request(app).get("/api/jobs/files").expect(200);
     expect(res.body.files).toEqual([]);
   });
-
+  
   it("GET /api/jobs retorna 404 quando nao ha planilhas", async () => {
     tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
     const app = createJobsApiApp({ outputDir: tmpDir });
@@ -72,7 +72,7 @@ describe("jobs API", () => {
     const sheet = XLSX.utils.json_to_sheet([{ titulo: "x" }]);
     XLSX.utils.book_append_sheet(workbook, sheet, "Vagas");
     XLSX.writeFile(workbook, join(tmpDir, "a.xlsx"));
-
+    
     const app = createJobsApiApp({ outputDir: tmpDir });
     const res = await request(app).get("/api/jobs").query({ file: "nao-existe.xlsx" }).expect(404);
     expect(res.body.message).toBe("Arquivo solicitado nao encontrado.");
@@ -87,7 +87,7 @@ describe("jobs API", () => {
 
     const app = createJobsApiApp({ outputDir: tmpDir });
     const res = await request(app).post("/api/scraper/run").expect(200);
-
+    
     expect(mocks.run).toHaveBeenCalledTimes(1);
     expect(res.body.ok).toBe(true);
     expect(res.body.file).toBe("resultado.xlsx");
@@ -102,10 +102,10 @@ describe("jobs API", () => {
         new Promise((resolve) => {
           finishRun = resolve;
         }),
-    );
-
-    const app = createJobsApiApp({ outputDir: tmpDir });
-
+      );
+      
+      const app = createJobsApiApp({ outputDir: tmpDir });
+      
     const firstRequest = new Promise((resolve, reject) => {
       request(app)
         .post("/api/scraper/run")
@@ -140,4 +140,31 @@ describe("jobs API", () => {
     expect(res.body.message).toBe("Erro ao executar o scraper.");
     expect(res.body.error).toBe("falha no scraper");
   });
+  
+  it("POST /api/keywords retorna 200 quando salvar as keywords", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    mocks.run.mockRejectedValue(new Error("Erro em pegar Keywords"));
+    
+    const app = createJobsApiApp({ outputDir: tmpDir });
+    const payload = { keywords: ["Java","Spring","RabbitMQ","Docker"] };
+    
+    const res = await request(app).post("/api/keywords").send(payload).expect(200);
+
+    expect(res.body).toEqual({
+      ok: true,
+      message: "Keywords atualizadas com sucesso.",
+      keywords: ["Java","Spring","RabbitMQ","Docker"]
+    });
+  });
+
+  it("GET /api/keywords retorna 200 com as keywords", async () => {
+    const app = createJobsApiApp({ outputDir: tmpDir });
+    const res = await request(app)
+      .get("/api/keywords").expect(200);
+    expect(res.body).toEqual({
+      ok: true,
+      keywords: ["Java","Spring","RabbitMQ","Docker"]
+    });
+  });
+  
 });
