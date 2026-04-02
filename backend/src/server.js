@@ -3,6 +3,8 @@ import express from "express";
 import { existsSync } from "fs";
 import path from "path";
 import { createJobsApiApp } from "./jobsApiApp.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./swagger.js";
 
 const PORT = Number(process.env.PORT || 3001);
 
@@ -30,8 +32,12 @@ if (staticDir && existsSync(staticDir)) {
     res.sendFile(path.join(staticDir, "index.html"));
   });
 }
+//Swagger documentacao
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`API de vagas rodando em http://localhost:${PORT}`);
+  console.log(`Documentação da API em http://localhost:${PORT}/docs`);
+
 });

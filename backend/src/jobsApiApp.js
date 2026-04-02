@@ -55,10 +55,38 @@ export function createJobsApiApp(options = {}) {
     });
   }
 
+  /**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Verifica se a API está online
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: API funcionando corretamente
+ */
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true });
   });
 
+  /**
+ * @swagger
+ * /api/jobs:
+ *   get:
+ *     summary: Retorna vagas a partir do arquivo mais recente ou de um arquivo específico
+ *     tags: [Jobs]
+ *     parameters:
+ *       - in: query
+ *         name: file
+ *         schema:
+ *           type: string
+ *         description: Nome do arquivo .xlsx
+ *     responses:
+ *       200:
+ *         description: Lista de vagas
+ *       404:
+ *         description: Arquivo não encontrado
+ */
   app.get("/api/jobs/files", (_req, res) => {
     const files = listXlsxFiles().map(({ file, modifiedAt, size }) => ({
       file,
@@ -69,6 +97,22 @@ export function createJobsApiApp(options = {}) {
     res.json({ files });
   });
 
+  /**
+ * @swagger
+ * /api/jobs/search:
+ *   get:
+ *     summary: Busca vagas utilizando cache
+ *     tags: [Jobs]
+ *     parameters:
+ *       - in: query
+ *         name: keywords
+ *         schema:
+ *           type: string
+ *         description: Lista de palavras-chave separadas por vírgula
+ *     responses:
+ *       200:
+ *         description: Resultado da busca
+ */
   // Novo endpoint para busca de vagas com cache
   app.get("/api/jobs/search", async (req, res) => {
     try {
@@ -93,6 +137,22 @@ export function createJobsApiApp(options = {}) {
     }
   });
 
+  /**
+ * @swagger
+ * /api/jobs/search:
+ *   get:
+ *     summary: Busca vagas utilizando cache
+ *     tags: [Jobs]
+ *     parameters:
+ *       - in: query
+ *         name: keywords
+ *         schema:
+ *           type: string
+ *         description: Lista de palavras-chave separadas por vírgula
+ *     responses:
+ *       200:
+ *         description: Resultado da busca
+ */
   app.get("/api/jobs", (req, res) => {
     try {
       const files = listXlsxFiles();
@@ -129,6 +189,29 @@ export function createJobsApiApp(options = {}) {
     }
   });
 
+  /**
+ * @swagger
+ * /api/keywords:
+ *   post:
+ *     summary: Atualiza palavras-chave
+ *     tags: [Keywords]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               keywords:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Keywords atualizadas
+ *       400:
+ *         description: Dados inválidos
+ */
   app.post("/api/keywords", (req, res) => {
     try {
       const { keywords } = req.body;
@@ -166,6 +249,16 @@ export function createJobsApiApp(options = {}) {
     }
   });
 
+ /**
+ * @swagger
+ * /api/keywords:
+ *   get:
+ *     summary: Retorna palavras-chave configuradas
+ *     tags: [Keywords]
+ *     responses:
+ *       200:
+ *         description: Lista de keywords
+ */
   app.get("/api/keywords", (req, res) => {
   try {
     const envPath = path.resolve(process.cwd(), "src", "db", "environment.json");
@@ -189,6 +282,18 @@ export function createJobsApiApp(options = {}) {
   }
 });
 
+  /**
+ * @swagger
+ * /api/scraper/run:
+ *   post:
+ *     summary: Executa o scraper de vagas
+ *     tags: [Scraper]
+ *     responses:
+ *       200:
+ *         description: Scraper executado com sucesso
+ *       409:
+ *         description: Scraper já em execução
+ */
   app.post("/api/scraper/run", async (_req, res) => {
     if (activeScraperRun) {
       return res.status(409).json({
