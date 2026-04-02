@@ -5,29 +5,46 @@ Uma plataforma interna para transformar arquivos XLSX de vagas em uma experienci
 
 ---
 
-## ⚠️ IMPORTANTE: Fluxo de Development e Branching
+## ⚠️ IMPORTANTE: Fluxo de Development, Card e Branching
 
 > **Padrão de Desenvolvimento - LEIA ATENTAMENTE**
-> 
+>
+> Toda nova implementação deve nascer primeiro de um **card/issue** e, somente depois, de uma **branch criada a partir da `master`**.
+>
+> **Board oficial para abertura e acompanhamento dos cards:**
+> https://github.com/users/Benevanio/projects/6
+>
 > O fluxo correto de trabalho deve seguir EXATAMENTE essa sequência:
-> 
-> 1. **Abrir uma Issue de Melhorias** - Descreva a feature/bug a implementar
-> 2. **Criar branch `feature/` a partir de `master`** - Nomenclatura: `feature/numero-da-issue-descricao`
-> 3. **Desenvolver e testar localmente** - Faça commits regulares na feature
-> 4. **Abrir Pull Request** - Apontar a feature para a branch `develop` (NÃO para master)
-> 5. **Code Review e Merge em `develop`** - Após aprovação, merge e teste na develop
-> 6. **Abrir PR de `develop` para `master`** - Somente features testadas e aprovadas
-> 7. **Merge em `master`** - Release final da feature
-> 
+>
+> 1. **Abrir um Card/Issue de melhoria no board oficial** - https://github.com/users/Benevanio/projects/6
+> 2. **Criar a branch a partir da `master` usando o mesmo nome do card** - mantenha o número e a descrição no nome da `feature/`
+> 3. **Desenvolver e testar localmente** - faça commits regulares na feature
+> 4. **Abrir Pull Request** - a PR da feature deve apontar para `develop` (NÃO para `master`)
+> 5. **Code Review e Merge em `develop`** - após aprovação, merge e validação
+> 6. **Abrir PR de `develop` para `master`** - somente features testadas e aprovadas
+> 7. **Merge em `master`** - release final da feature
+>
+> **Exemplo prático:**
+>
+> - Card no board: `#52 - Criar card de resumo no dashboard`
+> - Branch criada a partir da `master` com o mesmo nome do card: `feature/52-card-resumo-dashboard`
+>
+> ```bash
+> git checkout master
+> git pull origin master
+> git checkout -b feature/52-card-resumo-dashboard
+> ```
+>
 > **Resumo das branches:**
 > - `master`: Produção (releases finais e estáveis)
 > - `develop`: Staging (features em validação)
-> - `feature/*`: Branches de desenvolvimento (sempre partir de master)
-> 
+> - `feature/*`: Branches de desenvolvimento vinculadas a um card/issue e sempre criadas a partir de `master`
+>
 > ⛔ **NÃO faça:**
-> - Commits diretos em master ou develop
-> - Pull requests diretamente para master (primeira PR deve apontar para develop)
-> - Features sem issue associada
+> - Commits diretos em `master` ou `develop`
+> - Criar feature sem card/issue associado
+> - Criar branch de feature a partir de outra feature
+> - Abrir Pull Request diretamente para `master` na primeira etapa
 
 ---
 
