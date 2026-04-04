@@ -73,6 +73,8 @@ describe("KeywordsModal", () => {
     const onClose = vi.fn();
     render(<KeywordsModal onClose={onClose} />);
 
+    await waitFor(() => expect(screen.queryByText(/carregando/i)).not.toBeInTheDocument());
+
     const cancelButton = screen.getByRole("button", { name: /cancelar/i });
     fireEvent.click(cancelButton);
 

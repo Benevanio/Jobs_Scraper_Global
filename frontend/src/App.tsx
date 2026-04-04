@@ -6,8 +6,8 @@ import { useJobsData } from "@/hooks/useJobsData";
 import { useJobsFiltering } from "@/hooks/useJobsFiltering";
 import { useJobsPagination } from "@/hooks/useJobsPagination";
 import type { JobsMeta } from "@/types/jobs";
-import { RefreshCcw } from "lucide-react";
 import { useCallback, type SetStateAction } from "react";
+import { FiRefreshCw } from "react-icons/fi";
 
 function formatDate(timestamp: JobsMeta["modifiedAt"]): string {
   if (!timestamp) {
@@ -36,7 +36,7 @@ function App() {
   );
 
   const handleKeywordFilterChange = useCallback(
-    (value: SetStateAction<string>) => {
+    (value: SetStateAction<string[]>) => {
       setKeywordFilter((previous) => (typeof value === "function" ? value(previous) : value));
       resetPagination();
     },
@@ -82,10 +82,12 @@ function App() {
           meta={meta}
           actions={
             <>
-              <Button onClick={handleScraper} disabled={scraping}>
-                <RefreshCcw
-                  className={`h-4 w-4 ${scraping ? "animate-spin" : ""}`}
-                />
+              <Button
+                onClick={handleScraper}
+                disabled={scraping}
+                className="h-12 rounded-2xl bg-[#0c6b35] px-5 text-white shadow-sm hover:bg-[#0a5b2d]"
+              >
+                <FiRefreshCw className={`h-4 w-4 ${scraping ? "animate-spin" : ""}`} />
                 {scraping ? "Buscando vagas..." : "Buscar vagas"}
               </Button>
             </>

@@ -13,8 +13,10 @@ vi.mock("@/hooks/useJobsData", () => ({
     jobs: [{ titulo: "Dev", empresa: "ACME", local: "BR", palavra: "React", link: "x" }],
     meta: { file: "vagas.xlsx", modifiedAt: 1, total: 1 },
     loading: false,
+    scraping: false,
     error: "",
     loadJobs: vi.fn(),
+    triggerScraper: vi.fn(),
   }),
 }));
 
@@ -22,7 +24,7 @@ vi.mock("@/hooks/useJobsFiltering", () => ({
   useJobsFiltering: () => ({
     search: "",
     setSearch: vi.fn(),
-    keywordFilter: "all",
+    keywordFilter: [],
     setKeywordFilter: vi.fn(),
     keywords: ["React"],
     filteredJobs: [{ titulo: "Dev", empresa: "ACME", local: "BR", palavra: "React", link: "x" }],

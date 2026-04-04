@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
 import type { Job } from "@/types/jobs";
+import { useMemo, useState } from "react";
 
 export function useJobsFiltering(jobs: Job[]) {
   const [search, setSearch] = useState("");
-  const [keywordFilter, setKeywordFilter] = useState("all");
+  const [keywordFilter, setKeywordFilter] = useState<string[]>([]);
 
   const keywords = useMemo(() => {
     const values = Array.from(new Set(jobs.map((job) => String(job.palavra || "").trim()).filter(Boolean)));
@@ -14,7 +14,8 @@ export function useJobsFiltering(jobs: Job[]) {
     const term = search.trim().toLowerCase();
 
     return jobs.filter((job) => {
-      const byKeyword = keywordFilter === "all" || String(job.palavra || "") === keywordFilter;
+      const currentKeyword = String(job.palavra || "").trim();
+      const byKeyword = keywordFilter.length === 0 || keywordFilter.includes(currentKeyword);
       if (!byKeyword) {
         return false;
       }
