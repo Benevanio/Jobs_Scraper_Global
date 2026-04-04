@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { fetchKeywords, saveKeywords } from "@/services/jobsService";
-import { Badge } from "./ui/badge";
 import { X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Input } from "./ui/input";
 
 interface KeywordsModalProps {
   onClose: () => void;
@@ -59,21 +59,21 @@ export function KeywordsModal({ onClose }: KeywordsModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <Card className="w-full max-w-md mx-4">
         <CardHeader>
-          <CardTitle>Gerenciar Keywords</CardTitle>
+          <CardTitle>Gerenciar filtros</CardTitle>
           <CardDescription>
-            Adicione ou remova as palavras-chave usadas para filtrar as vagas.
+            Adicione ou remova as palavras-chave usadas na busca e nos filtros de vagas.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
             <Input
-              placeholder="Nova keyword..."
+              placeholder="Nova palavra-chave ou filtro..."
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddKeyword()}
             />
             <Button onClick={handleAddKeyword} disabled={isLoading || isSaving}>
-              Adicionar
+              Adicionar filtro
             </Button>
           </div>
 

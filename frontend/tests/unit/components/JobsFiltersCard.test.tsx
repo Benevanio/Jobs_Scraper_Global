@@ -13,7 +13,7 @@ describe("JobsFiltersCard", () => {
       <JobsFiltersCard
         search=""
         setSearch={setSearch}
-        keywordFilter="all"
+        keywordFilter={[]}
         setKeywordFilter={setKeywordFilter}
         keywords={["React"]}
         selectedFile="vagas.xlsx"
@@ -35,12 +35,12 @@ describe("JobsFiltersCard", () => {
     expect(onRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("renderiza badge de arquivo e total de vagas", () => {
+  it("renderiza badge de arquivo, total e area de filtros", () => {
     render(
       <JobsFiltersCard
         search=""
         setSearch={vi.fn()}
-        keywordFilter="all"
+        keywordFilter={[]}
         setKeywordFilter={vi.fn()}
         keywords={["React"]}
         selectedFile="vagas.xlsx"
@@ -52,6 +52,8 @@ describe("JobsFiltersCard", () => {
 
     expect(screen.getAllByText("vagas.xlsx").length).toBeGreaterThan(0);
     expect(screen.getByText("1 vagas")).toBeInTheDocument();
+    expect(screen.getByText(/filtros selecionados/i)).toBeInTheDocument();
+    expect(screen.getByText(/use o botão filtrar/i)).toBeInTheDocument();
   });
 
   it("dispara mudancas nos filtros de keyword e arquivo", () => {
@@ -62,7 +64,7 @@ describe("JobsFiltersCard", () => {
       <JobsFiltersCard
         search=""
         setSearch={vi.fn()}
-        keywordFilter="all"
+        keywordFilter={[]}
         setKeywordFilter={setKeywordFilter}
         keywords={["React"]}
         selectedFile="vagas.xlsx"
@@ -78,5 +80,33 @@ describe("JobsFiltersCard", () => {
 
     expect(setKeywordFilter).toHaveBeenCalled();
     expect(setSelectedFile).toHaveBeenCalled();
+  });
+
+  it("abre o gerenciador ao clicar em filtrar e permite limpar os filtros selecionados", () => {
+    const setSearch = vi.fn();
+    const setKeywordFilter = vi.fn();
+
+    render(
+      <JobsFiltersCard
+        search="UX/UI Designer"
+        setSearch={setSearch}
+        keywordFilter={["React"]}
+        setKeywordFilter={setKeywordFilter}
+        keywords={["React"]}
+        selectedFile="vagas.xlsx"
+        setSelectedFile={vi.fn()}
+        files={[{ file: "vagas.xlsx" }]}
+        meta={{ file: "vagas.xlsx", modifiedAt: Date.now(), total: 2 }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /^filtrar$/i }));
+    expect(screen.getByText(/gerenciar filtros/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /limpar filtros/i }));
+
+    expect(screen.getAllByText("React").length).toBeGreaterThan(0);
+    expect(setSearch).toHaveBeenCalledWith("");
+    expect(setKeywordFilter).toHaveBeenCalledWith([]);
   });
 });

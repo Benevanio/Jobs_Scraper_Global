@@ -21,4 +21,21 @@ describe("useJobsFiltering", () => {
     expect(result.current.filteredJobs).toHaveLength(1);
     expect(result.current.filteredJobs[0].titulo).toBe("Backend");
   });
+
+  it("permite selecionar varias palavras-chave ao mesmo tempo", () => {
+    const { result } = renderHook(() => useJobsFiltering(JOBS));
+
+    act(() => {
+      result.current.setKeywordFilter(["React", "Node"]);
+    });
+
+    expect(result.current.filteredJobs).toHaveLength(2);
+
+    act(() => {
+      result.current.setKeywordFilter(["React"]);
+    });
+
+    expect(result.current.filteredJobs).toHaveLength(1);
+    expect(result.current.filteredJobs[0].titulo).toBe("Frontend");
+  });
 });
