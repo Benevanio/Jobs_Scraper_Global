@@ -98,7 +98,6 @@ function App() {
           meta={meta}
           filteredJobs={filteredJobs}
           paginatedJobs={paginatedJobs}
-          jobs={jobs}
           loading={loading || scraping}
           error={error}
           formatDate={formatDate}

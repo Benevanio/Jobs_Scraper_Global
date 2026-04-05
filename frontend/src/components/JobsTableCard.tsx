@@ -10,7 +10,6 @@ interface JobsTableCardProps {
   meta: JobsMeta;
   filteredJobs: Job[];
   paginatedJobs: Job[];
-  jobs: Job[];
   loading: boolean;
   error: string;
   formatDate: (timestamp: JobsMeta["modifiedAt"]) => string;
@@ -86,7 +85,6 @@ export function JobsTableCard({
   meta,
   filteredJobs,
   paginatedJobs,
-  jobs,
   loading,
   error,
   formatDate,
