@@ -10,21 +10,88 @@ function normalizeJob(job, keyword, adapter) {
   };
 }
 
-function mergeKeywords(existing, incoming) {
-  const keywords = new Set([
-    ...(existing.keywords || []),
-    ...(existing.keyword ? [existing.keyword] : []),
-    ...(existing.palavraChave ? [existing.palavraChave] : []),
-    ...(incoming.keywords || []),
-    ...(incoming.keyword ? [incoming.keyword] : []),
-    ...(incoming.palavraChave ? [incoming.palavraChave] : []),
-  ]);
+function normalizeComparableText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
 
-  const mergedKeywords = [...keywords].filter(Boolean);
+function normalizeComparableUrl(value) {
+  const rawValue = String(value || "").trim();
+
+  if (!rawValue) {
+    return "";
+  }
+
+  try {
+    const parsedUrl = new URL(rawValue);
+    parsedUrl.search = "";
+    parsedUrl.hash = "";
+    return `${parsedUrl.origin}${parsedUrl.pathname}`.replace(/\/+$/, "");
+  } catch {
+    return rawValue.split(/[?#]/)[0].replace(/\/+$/, "");
+  }
+}
+
+function getMergedKeywords(...jobs) {
+  return [
+    ...new Set(
+      jobs.flatMap((job) =>
+        [
+          ...(Array.isArray(job.keywords) ? job.keywords : []),
+          job.keyword,
+          job.palavraChave,
+          job.palavra,
+        ]
+          .filter(Boolean)
+          .map((keyword) => String(keyword).trim()),
+      ),
+    ),
+  ];
+}
+
+function getMergedSources(...jobs) {
+  return [
+    ...new Set(
+      jobs.flatMap((job) =>
+        [
+          ...(Array.isArray(job.sources) ? job.sources : []),
+          job.source,
+        ]
+          .filter(Boolean)
+          .map((source) => String(source).trim()),
+      ),
+    ),
+  ];
+}
+
+function pickPreferredValue(...values) {
+  return (
+    values
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+      .sort((left, right) => right.length - left.length)[0] || ""
+  );
+}
+
+function mergeKeywords(existing, incoming) {
+  const mergedKeywords = getMergedKeywords(existing, incoming);
+  const mergedSources = getMergedSources(existing, incoming);
 
   return {
     ...existing,
     ...incoming,
+    titulo: pickPreferredValue(existing.titulo, incoming.titulo, existing.title, incoming.title),
+    empresa: pickPreferredValue(existing.empresa, incoming.empresa, existing.company, incoming.company),
+    local: pickPreferredValue(existing.local, incoming.local, existing.location, incoming.location),
+    link: pickPreferredValue(existing.link, incoming.link, existing.jobUrl, incoming.jobUrl),
+    jobUrl: pickPreferredValue(existing.jobUrl, incoming.jobUrl, existing.link, incoming.link),
+    source: mergedSources.join(", ") || existing.source || incoming.source || "",
+    sources: mergedSources,
     keyword: mergedKeywords[0] || "",
     palavraChave: mergedKeywords[0] || "",
     keywords: mergedKeywords,
@@ -32,16 +99,33 @@ function mergeKeywords(existing, incoming) {
   };
 }
 
+function buildDedupKey(job) {
+  const title = normalizeComparableText(job.titulo || job.title);
+  const company = normalizeComparableText(job.empresa || job.company);
+  const location = normalizeComparableText(job.local || job.location);
+
+  if (title && company && location) {
+    return `identity:${title}|${company}|${location}`;
+  }
+
+  if (title && company) {
+    return `identity:${title}|${company}|${location || "sem-local"}`;
+  }
+
+  const normalizedLink = normalizeComparableUrl(job.link || job.jobUrl);
+
+  if (normalizedLink) {
+    return `url:${normalizedLink}`;
+  }
+
+  return `fallback:${title}|${company}|${location}|${normalizeComparableText(job.source)}`;
+}
+
 function dedupeJobs(jobs) {
   const unique = new Map();
 
   for (const job of jobs) {
-    const key =
-      job.link ||
-      job.jobUrl ||
-      `${job.source}-${job.titulo || job.title}-${job.empresa || job.company}-${job.local || job.location}`;
-
-    if (!key) continue;
+    const key = buildDedupKey(job);
 
     if (unique.has(key)) {
       const existing = unique.get(key);
@@ -49,16 +133,15 @@ function dedupeJobs(jobs) {
       continue;
     }
 
+    const mergedKeywords = getMergedKeywords(job);
+    const mergedSources = getMergedSources(job);
+
     unique.set(key, {
       ...job,
+      source: mergedSources.join(", ") || job.source || "",
+      sources: mergedSources,
       palavra: job.keyword || job.palavraChave || job.palavra || "",
-      keywords: [
-        ...new Set(
-          [job.keyword, job.palavraChave, ...(job.keywords || [])].filter(
-            Boolean,
-          ),
-        ),
-      ],
+      keywords: mergedKeywords,
     });
   }
 

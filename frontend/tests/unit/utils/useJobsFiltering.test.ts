@@ -38,4 +38,29 @@ describe("useJobsFiltering", () => {
     expect(result.current.filteredJobs).toHaveLength(1);
     expect(result.current.filteredJobs[0].titulo).toBe("Frontend");
   });
+
+  it("deduplica vagas equivalentes e combina palavras-chave", () => {
+    const duplicatedJobs = [
+      {
+        palavra: "Java",
+        titulo: "Desenvolvedor(a) Java Jr",
+        empresa: "Sankhya",
+        local: "Brasil",
+        link: "https://www.linkedin.com/jobs/view/desenvolvedor-java-jr-123?refId=abc",
+      },
+      {
+        palavra: "Spring",
+        titulo: "desenvolvedor a java jr",
+        empresa: "Sankhya",
+        local: "Brasil",
+        link: "https://boards.greenhouse.io/sankhya/jobs/123",
+      },
+    ];
+
+    const { result } = renderHook(() => useJobsFiltering(duplicatedJobs));
+
+    expect(result.current.filteredJobs).toHaveLength(1);
+    expect(result.current.filteredJobs[0].palavra).toContain("Java");
+    expect(result.current.filteredJobs[0].palavra).toContain("Spring");
+  });
 });

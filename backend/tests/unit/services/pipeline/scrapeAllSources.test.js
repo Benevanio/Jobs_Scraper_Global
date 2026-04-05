@@ -160,6 +160,41 @@ describe("scrapeAllSources", () => {
     expect(jobs[0].keywords).toEqual(["React", "Node"]);
   });
 
+  it("deduplica a mesma vaga entre plataformas pelo título, empresa e local", async () => {
+    const adapters = [
+      {
+        sourceName: "LinkedIn",
+        search: vi.fn().mockResolvedValue([
+          {
+            titulo: "Desenvolvedor(a) Java Jr",
+            empresa: "Sankhya",
+            local: "Brasil",
+            link: "https://www.linkedin.com/jobs/view/desenvolvedor-java-jr-123?refId=abc&trackingId=123",
+          },
+        ]),
+      },
+      {
+        sourceName: "Greenhouse",
+        search: vi.fn().mockResolvedValue([
+          {
+            titulo: "desenvolvedor a java jr",
+            empresa: "Sankhya",
+            local: "Brasil",
+            link: "https://boards.greenhouse.io/sankhya/jobs/123",
+          },
+        ]),
+      },
+    ];
+
+    const jobs = await scrapeAllSources(adapters, { keywords: ["Java"] });
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0]).toMatchObject({
+      empresa: "Sankhya",
+      local: "Brasil",
+    });
+  });
+
   it("ignora retorno inválido do adapter e chama logWarn", async () => {
     const adapters = [
       {
