@@ -1,17 +1,15 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { Job, JobsMeta } from "@/types/jobs";
 import { useState } from "react";
-import { FiCheckSquare, FiSquare } from "react-icons/fi";
+import { FiCheckSquare, FiChevronLeft, FiChevronRight, FiSquare } from "react-icons/fi";
 
 interface JobsTableCardProps {
   meta: JobsMeta;
   filteredJobs: Job[];
   paginatedJobs: Job[];
-  jobs: Job[];
   loading: boolean;
   error: string;
   formatDate: (timestamp: JobsMeta["modifiedAt"]) => string;
@@ -29,7 +27,27 @@ type StatusToggleButtonProps = {
   onClick: () => void;
 };
 
-const PAGE_SIZE_OPTIONS = [15, 25, 50, 100];
+type PaginationItem = number | string;
+
+function getResultsLabel(total: number) {
+  return `Resultados: ${total} ${total === 1 ? "vaga encontrada" : "vagas encontradas"}`;
+}
+
+function getPaginationItems(currentPage: number, totalPages: number): PaginationItem[] {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, 5];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return Array.from({ length: 5 }, (_, index) => totalPages - 4 + index);
+  }
+
+  return [1, "ellipsis-start", currentPage - 1, currentPage, currentPage + 1, "ellipsis-end", totalPages];
+}
 
 function getJobId(job: Job, index: number) {
   return job.link?.trim() || [job.titulo, job.empresa, job.local, String(index)].filter(Boolean).join("|");
@@ -67,7 +85,6 @@ export function JobsTableCard({
   meta,
   filteredJobs,
   paginatedJobs,
-  jobs,
   loading,
   error,
   formatDate,
@@ -79,14 +96,14 @@ export function JobsTableCard({
 }: JobsTableCardProps) {
   const [spamMarks, setSpamMarks] = useState<Record<string, boolean>>({});
   const [readMarks, setReadMarks] = useState<Record<string, boolean>>({});
+  const resultsLabel = getResultsLabel(filteredJobs.length);
+  const paginationItems = getPaginationItems(currentPage, totalPages);
 
   return (
     <Card className="mb-4 border-border/70 bg-card/90 backdrop-blur dark:bg-card/95">
       <CardHeader>
         <CardTitle className="text-lg">Vagas Encontradas</CardTitle>
-        <CardDescription>
-          Atualizado em {formatDate(meta.modifiedAt)}. Mostrando {filteredJobs.length} de {jobs.length} vagas.
-        </CardDescription>
+        <CardDescription>Lista paginada com os resultados mais recentes das buscas.</CardDescription>
       </CardHeader>
       <CardContent>
         {error ? (
@@ -95,53 +112,14 @@ export function JobsTableCard({
           </div>
         ) : null}
 
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            Pagina {currentPage} de {totalPages}
-          </p>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground" htmlFor="page-size">
-              Itens por pagina
-            </label>
-            <select
-              id="page-size"
-              className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-              value={pageSize}
-              onChange={(event) => onPageSizeChange(Number(event.target.value))}
-            >
-              {PAGE_SIZE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage <= 1}
-            >
-              Anterior
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage >= totalPages}
-            >
-              Proxima
-            </Button>
-          </div>
-        </div>
-
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Titulo</TableHead>
+              <TableHead>Título</TableHead>
               <TableHead>Empresa</TableHead>
               <TableHead>Local</TableHead>
               <TableHead>Link</TableHead>
-              <TableHead>Palavras chaves</TableHead>
+              <TableHead>Palavras-chave</TableHead>
               <TableHead className="text-center text-[11px] uppercase tracking-[0.16em]">Spam</TableHead>
               <TableHead className="text-center text-[11px] uppercase tracking-[0.16em]">Lido</TableHead>
               <TableHead>Fonte</TableHead>
@@ -225,6 +203,84 @@ export function JobsTableCard({
             ) : null}
           </TableBody>
         </Table>
+
+        <div className="mt-4 border-t border-border/60 pt-4">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{resultsLabel}</span>
+            <span> (Atualizado em {formatDate(meta.modifiedAt)})</span>
+          </p>
+
+          <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <label
+              htmlFor="page-size"
+              className="flex w-fit items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm shadow-sm"
+            >
+              <span className="text-muted-foreground">Itens por página</span>
+              <input
+                id="page-size"
+                aria-label="Itens por página"
+                type="number"
+                min={1}
+                max={10}
+                step={1}
+                className="w-14 rounded-md bg-transparent text-center font-semibold text-foreground outline-none"
+                value={pageSize}
+                onChange={(event) => onPageSizeChange(Number(event.target.value))}
+              />
+            </label>
+
+            <nav className="flex items-center gap-1 self-end md:self-auto" aria-label="Paginação">
+              <button
+                type="button"
+                aria-label="Pagina anterior"
+                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="flex h-9 min-w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <FiChevronLeft className="h-4 w-4" />
+              </button>
+
+              {paginationItems.map((item, index) => {
+                if (typeof item !== "number") {
+                  return (
+                    <span key={`${item}-${index}`} className="px-2 text-sm text-muted-foreground" aria-hidden="true">
+                      …
+                    </span>
+                  );
+                }
+
+                const isCurrent = item === currentPage;
+
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    aria-current={isCurrent ? "page" : undefined}
+                    onClick={() => onPageChange(item)}
+                    className={cn(
+                      "flex h-9 min-w-9 items-center justify-center rounded-full px-3 text-sm font-medium transition-colors",
+                      isCurrent
+                        ? "bg-[#0c6b35] text-white shadow-sm"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                aria-label="Pagina seguinte"
+                onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="flex h-9 min-w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <FiChevronRight className="h-4 w-4" />
+              </button>
+            </nav>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

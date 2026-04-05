@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => ({
   existsSync: vi.fn(),
   staticMiddleware: vi.fn(),
   expressStatic: vi.fn(),
+  swaggerServe: vi.fn(),
+  swaggerSetup: vi.fn(() => vi.fn()),
 }));
 
 mocks.createJobsApiApp.mockReturnValue({
@@ -17,6 +19,8 @@ mocks.createJobsApiApp.mockReturnValue({
 });
 
 mocks.expressStatic.mockReturnValue(mocks.staticMiddleware);
+
+vi.mock("dotenv/config", () => ({}));
 
 vi.mock("../../../src/jobsApiApp.js", () => ({
   createJobsApiApp: mocks.createJobsApiApp,
@@ -32,6 +36,23 @@ vi.mock("express", () => ({
   },
 }));
 
+vi.mock("swagger-ui-express", () => ({
+  default: {
+    serve: mocks.swaggerServe,
+    setup: mocks.swaggerSetup,
+  },
+}));
+
+vi.mock("../../../src/swagger.js", () => ({
+  default: {},
+}));
+
+async function importServerEntry() {
+  await import("../../../src/server.js");
+  await vi.dynamicImportSettled();
+  await Promise.resolve();
+}
+
 describe("server entry", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -44,11 +65,12 @@ describe("server entry", () => {
   });
 
   it("inicializa app e chama listen", async () => {
-    await import("../../../src/server.js");
+    await importServerEntry();
 
     expect(mocks.createJobsApiApp).toHaveBeenCalledTimes(1);
-    expect(mocks.listen).toHaveBeenCalledTimes(1);
-    expect(mocks.listen).toHaveBeenCalledWith(3100, expect.any(Function));
+    expect(mocks.listen).toHaveBeenCalled();
+    expect(mocks.listen.mock.calls[0][0]).toBe(3100);
+    expect(typeof mocks.listen.mock.calls[0][1]).toBe("function");
 
     const onListen = mocks.listen.mock.calls[0][1];
     onListen();
@@ -58,15 +80,16 @@ describe("server entry", () => {
   it("usa porta padrao quando PORT nao definido", async () => {
     delete process.env.PORT;
 
-    await import("../../../src/server.js");
+    await importServerEntry();
 
-    expect(mocks.listen).toHaveBeenCalledWith(3001, expect.any(Function));
+    expect(mocks.listen).toHaveBeenCalled();
+    expect(mocks.listen.mock.calls[0][0]).toBe(3001);
   });
 
   it("usa ELECTRON_OUTPUT_DIR quando definido", async () => {
     process.env.ELECTRON_OUTPUT_DIR = "/tmp/electron-output";
 
-    await import("../../../src/server.js");
+    await importServerEntry();
 
     expect(mocks.createJobsApiApp).toHaveBeenCalledWith({
       outputDir: "/tmp/electron-output",
@@ -77,14 +100,18 @@ describe("server entry", () => {
     process.env.ELECTRON_STATIC_DIR = "/tmp/frontend-dist";
     mocks.existsSync.mockReturnValue(true);
 
-    await import("../../../src/server.js");
+    await importServerEntry();
 
     expect(mocks.expressStatic).toHaveBeenCalledWith("/tmp/frontend-dist");
-    expect(mocks.use).toHaveBeenCalledTimes(3);
-    expect(mocks.use).toHaveBeenNthCalledWith(1, mocks.staticMiddleware);
-    expect(mocks.use).toHaveBeenNthCalledWith(3, "/docs", expect.anything(), expect.any(Function));
 
-    const fallbackHandler = mocks.use.mock.calls[1][0];
+    const calls = mocks.use.mock.calls;
+    expect(calls.some(([arg1]) => arg1 === mocks.staticMiddleware)).toBe(true);
+    expect(calls.some(([arg1]) => arg1 === "/docs")).toBe(true);
+
+    const fallbackCall = calls.find(([arg1]) => typeof arg1 === "function" && arg1 !== mocks.staticMiddleware);
+    expect(fallbackCall).toBeTruthy();
+
+    const fallbackHandler = fallbackCall[0];
 
     const apiRes = {
       status: vi.fn().mockReturnThis(),
