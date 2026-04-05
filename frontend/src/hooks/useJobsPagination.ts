@@ -1,17 +1,25 @@
-import { useMemo, useState } from "react";
 import type { Job } from "@/types/jobs";
+import { useMemo, useState } from "react";
 
 interface UseJobsPaginationParams {
   filteredJobs: Job[];
   initialPageSize?: number;
 }
 
+function clampPageSize(value: number) {
+  if (!Number.isFinite(value)) {
+    return 1;
+  }
+
+  return Math.min(10, Math.max(1, Math.trunc(value)));
+}
+
 export function useJobsPagination({
   filteredJobs,
-  initialPageSize = 25,
+  initialPageSize = 4,
 }: UseJobsPaginationParams) {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(initialPageSize);
+  const [pageSize, setPageSizeState] = useState(clampPageSize(initialPageSize));
 
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(filteredJobs.length / pageSize));
@@ -28,6 +36,13 @@ export function useJobsPagination({
     setPage((previous) => {
       const next = typeof value === "function" ? value(previous) : value;
       return Math.max(1, next);
+    });
+  }
+
+  function setPageSize(value: number | ((previous: number) => number)) {
+    setPageSizeState((previous) => {
+      const next = typeof value === "function" ? value(previous) : value;
+      return clampPageSize(next);
     });
   }
 

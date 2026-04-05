@@ -29,17 +29,18 @@ const baseProps = {
   error: "",
   formatDate: () => "agora",
   currentPage: 1,
-  totalPages: 2,
-  pageSize: 25,
+  totalPages: 5,
+  pageSize: 4,
   onPageChange: vi.fn(),
   onPageSizeChange: vi.fn(),
 };
 
 describe("JobsTableCard", () => {
-  it("renderiza tabela com palavras-chave em tags e colunas de spam e lido", () => {
+  it("renderiza tabela com resumo, palavras-chave e colunas de spam e lido", () => {
     render(<JobsTableCard {...baseProps} />);
 
     expect(screen.getByText("Vagas Encontradas")).toBeInTheDocument();
+    expect(screen.getByText(/Resultados: 1 vaga encontrada/i)).toBeInTheDocument();
     expect(screen.getByText("Abrir vaga")).toBeInTheDocument();
     expect(screen.getByText("JavaScript")).toBeInTheDocument();
     expect(screen.getByText("UX-UI")).toBeInTheDocument();
@@ -47,10 +48,20 @@ describe("JobsTableCard", () => {
     expect(screen.getByText(/lido/i)).toBeInTheDocument();
   });
 
-  it("aciona paginacao", () => {
+  it("aciona paginacao numerica", () => {
     render(<JobsTableCard {...baseProps} />);
-    fireEvent.click(screen.getByRole("button", { name: "Proxima" }));
-    expect(baseProps.onPageChange).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "2" }));
+    expect(baseProps.onPageChange).toHaveBeenCalledWith(2);
+  });
+
+  it("exibe setas para voltar e avancar entre paginas", () => {
+    render(<JobsTableCard {...baseProps} currentPage={3} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /pagina anterior/i }));
+    fireEvent.click(screen.getByRole("button", { name: /pagina seguinte/i }));
+
+    expect(baseProps.onPageChange).toHaveBeenCalledWith(2);
+    expect(baseProps.onPageChange).toHaveBeenCalledWith(4);
   });
 
   it("permite marcar a vaga como spam e lida", () => {
