@@ -77,17 +77,16 @@ O projeto esta organizado em monorepo e conecta duas frentes:
 
 ## Demo
 
-### Interface em tema escuro e claro
 
 
 
-<img width="1870" height="847" alt="Image" src="https://github.com/user-attachments/assets/37de83d7-e841-4d9c-a48f-efc2c3bb27bc" />
+<img width="1888" height="718" alt="image" src="https://github.com/user-attachments/assets/37ee169f-9d9a-43f4-888f-bcae710c7808" />
+<img width="1900" height="733" alt="image" src="https://github.com/user-attachments/assets/7d09c1c6-67e6-48bf-9720-4d178b20af21" />
 
+<img width="1833" height="497" alt="image" src="https://github.com/user-attachments/assets/f6088114-61fa-40b2-a505-f2da36d037fe" />
 
-<img width="1839" height="874" alt="Image" src="https://github.com/user-attachments/assets/6b2e1a50-4b0a-4904-aafa-95667ca8928c" />
+<img width="1818" height="707" alt="image" src="https://github.com/user-attachments/assets/483950a2-9e0b-4445-83f2-91a985c7a710" />
 
-
-<img width="1861" height="695" alt="Image" src="https://github.com/user-attachments/assets/fbf5b122-af42-4a52-b457-23243b0175a9" />
 
 ## Arquitetura do produto
 
