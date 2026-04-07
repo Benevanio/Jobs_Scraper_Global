@@ -148,6 +148,19 @@ describe("jobsService", () => {
     await expect(fetchKeywords()).rejects.toThrow("erro-api");
   });
 
+  it("lanca erro legivel quando a resposta nao e JSON", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        headers: { get: () => "text/plain; charset=utf-8" },
+        text: async () => "Vercel rewrite nao encontrado.",
+      })),
+    );
+
+    await expect(fetchKeywords()).rejects.toThrow("Vercel rewrite nao encontrado.");
+  });
+
   it("salva keywords com sucesso", async () => {
     const fetchMock = vi.fn(async () => ({
       ok: true,

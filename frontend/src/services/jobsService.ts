@@ -19,6 +19,26 @@ function buildApiUrl(path: string): string {
   return baseUrl ? `${baseUrl}${normalizedPath}` : normalizedPath;
 }
 
+async function readPayload(response: Response): Promise<Record<string, unknown>> {
+  const contentType = response.headers?.get?.("content-type") ?? "";
+
+  if (!contentType || contentType.includes("application/json")) {
+    try {
+      const payload = await response.json();
+      return payload && typeof payload === "object" ? (payload as Record<string, unknown>) : {};
+    } catch {
+      // Fallback below for non-JSON bodies returned by proxies/platforms.
+    }
+  }
+
+  if (typeof response.text === "function") {
+    const text = await response.text();
+    return text ? { message: text } : {};
+  }
+
+  return {};
+}
+
 function buildError(message: unknown, fallback: string): Error {
   return new Error(typeof message === "string" && message ? message : fallback);
 }
@@ -35,7 +55,7 @@ function readMessage(payload: unknown): string | undefined {
 
 export async function fetchJobFiles(): Promise<JobFile[]> {
   const response = await fetch(buildApiUrl("/api/jobs/files"));
-  const payload = (await response.json()) as { files?: unknown } & Record<string, unknown>;
+  const payload = (await readPayload(response)) as { files?: unknown } & Record<string, unknown>;
 
   if (!response.ok) {
     throw buildError(readMessage(payload), "Falha ao listar arquivos de vagas.");
@@ -54,7 +74,7 @@ export async function fetchJobFiles(): Promise<JobFile[]> {
 export async function fetchJobsByFile(fileName: string): Promise<JobsResponse> {
   const suffix = fileName ? `?file=${encodeURIComponent(fileName)}` : "";
   const response = await fetch(buildApiUrl(`/api/jobs${suffix}`));
-  const payload = (await response.json()) as Record<string, unknown>;
+  const payload = (await readPayload(response)) as Record<string, unknown>;
 
   if (!response.ok) {
     throw buildError(readMessage(payload), "Falha ao carregar vagas.");
@@ -70,7 +90,7 @@ export async function fetchJobsByFile(fileName: string): Promise<JobsResponse> {
 
 export async function fetchKeywords(): Promise<string[]> {
   const response = await fetch(buildApiUrl("/api/keywords"));
-  const payload = (await response.json()) as { keywords?: unknown } & Record<string, unknown>;
+  const payload = (await readPayload(response)) as { keywords?: unknown } & Record<string, unknown>;
 
   if (!response.ok) {
     throw buildError(readMessage(payload), "Falha ao carregar keywords.");
@@ -87,7 +107,7 @@ export async function saveKeywords(keywords: string[]): Promise<void> {
     },
     body: JSON.stringify({ keywords }),
   });
-  const payload = (await response.json()) as Record<string, unknown>;
+  const payload = (await readPayload(response)) as Record<string, unknown>;
 
   if (!response.ok) {
     throw buildError(readMessage(payload), "Falha ao salvar keywords.");
@@ -98,7 +118,7 @@ export async function runScraperRequest(): Promise<void> {
   const response = await fetch(buildApiUrl("/api/scraper/run"), {
     method: "POST",
   });
-  const payload = (await response.json()) as Record<string, unknown>;
+  const payload = (await readPayload(response)) as Record<string, unknown>;
 
   if (!response.ok) {
     throw buildError(readMessage(payload), "Falha ao executar o scraper.");
