@@ -1,5 +1,28 @@
 import type { JobFile, JobsResponse } from "@/types/jobs";
 
+function normalizeBaseUrl(value: string | undefined): string {
+  return typeof value === "string" ? value.trim().replace(/\/+$/, "") : "";
+}
+
+function getApiBaseUrl(): string {
+  const configuredBaseUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL);
+  if (configuredBaseUrl) {
+    return configuredBaseUrl;
+  }
+
+  if (typeof window !== "undefined" && window.location.hostname === "painel-vagas-lake.vercel.app") {
+    return "https://jobsglobalscraper.ddns.net";
+  }
+
+  return "";
+}
+
+function buildApiUrl(path: string): string {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const baseUrl = getApiBaseUrl();
+  return baseUrl ? `${baseUrl}${normalizedPath}` : normalizedPath;
+}
+
 function buildError(message: unknown, fallback: string): Error {
   return new Error(typeof message === "string" && message ? message : fallback);
 }
@@ -15,7 +38,7 @@ function readMessage(payload: unknown): string | undefined {
 }
 
 export async function fetchJobFiles(): Promise<JobFile[]> {
-  const response = await fetch("/api/jobs/files");
+  const response = await fetch(buildApiUrl("/api/jobs/files"));
   const payload = (await response.json()) as { files?: unknown } & Record<string, unknown>;
 
   if (!response.ok) {
@@ -34,7 +57,7 @@ export async function fetchJobFiles(): Promise<JobFile[]> {
 
 export async function fetchJobsByFile(fileName: string): Promise<JobsResponse> {
   const suffix = fileName ? `?file=${encodeURIComponent(fileName)}` : "";
-  const response = await fetch(`/api/jobs${suffix}`);
+  const response = await fetch(buildApiUrl(`/api/jobs${suffix}`));
   const payload = (await response.json()) as Record<string, unknown>;
 
   if (!response.ok) {
@@ -50,7 +73,7 @@ export async function fetchJobsByFile(fileName: string): Promise<JobsResponse> {
 }
 
 export async function fetchKeywords(): Promise<string[]> {
-  const response = await fetch("/api/keywords");
+  const response = await fetch(buildApiUrl("/api/keywords"));
   const payload = (await response.json()) as { keywords?: unknown } & Record<string, unknown>;
 
   if (!response.ok) {
@@ -61,7 +84,7 @@ export async function fetchKeywords(): Promise<string[]> {
 }
 
 export async function saveKeywords(keywords: string[]): Promise<void> {
-  const response = await fetch("/api/keywords", {
+  const response = await fetch(buildApiUrl("/api/keywords"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -76,7 +99,7 @@ export async function saveKeywords(keywords: string[]): Promise<void> {
 }
 
 export async function runScraperRequest(): Promise<void> {
-  const response = await fetch("/api/scraper/run", {
+  const response = await fetch(buildApiUrl("/api/scraper/run"), {
     method: "POST",
   });
   const payload = (await response.json()) as Record<string, unknown>;

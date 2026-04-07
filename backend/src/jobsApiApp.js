@@ -8,15 +8,59 @@ import { getConfig } from "./config.js";
 import { searchJobsWithCache } from "./pipeline/searchJobsWithCache.js";
 import { sources } from "./sources/index.js";
 
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://painel-vagas-lake.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:5174",
+];
+
+function parseAllowedOrigins(value) {
+  const configuredOrigins = String(value ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return new Set(configuredOrigins.length > 0 ? configuredOrigins : DEFAULT_ALLOWED_ORIGINS);
+}
+
 /**
  * @param {{ outputDir?: string }} [options]
  */
 export function createJobsApiApp(options = {}) {
   const outputDir = options.outputDir ?? path.resolve(process.cwd(), "output");
+  const allowedOrigins = parseAllowedOrigins(process.env.CORS_ALLOWED_ORIGINS);
+  const corsOptions = {
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Origin not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+    credentials: false,
+    maxAge: 86400,
+  };
   const app = express();
   let activeScraperRun = null;
 
-  app.use(cors());
+  app.disable("x-powered-by");
+  app.use(express.json({ limit: "16kb" }));
+  app.use((req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+
+    if (req.secure || req.get("x-forwarded-proto") === "https") {
+      res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+
+    next();
+  });
+  app.use(cors(corsOptions));
   app.use(express.json());
 
   function listXlsxFiles() {
@@ -320,6 +364,16 @@ export function createJobsApiApp(options = {}) {
     } finally {
       activeScraperRun = null;
     }
+  });
+
+  app.use((error, _req, res, next) => {
+    if (error?.message === "Origin not allowed by CORS") {
+      return res.status(403).json({
+        message: "Origem nao permitida.",
+      });
+    }
+
+    return next(error);
   });
 
   return app;
