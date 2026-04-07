@@ -1,3 +1,6 @@
+import { mkdtempSync, writeFileSync } from "fs";
+import { tmpdir } from "os";
+import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getConfig } from "../../../src/config.js";
 
@@ -17,6 +20,7 @@ const CONFIG_ENV_KEYS = [
   "JOB_TYPES",
   "TIME_FILTER",
   "SEARCH_KEYWORDS",
+  "KEYWORDS_FILE_PATH",
 ];
 
 describe("getConfig", () => {
@@ -45,9 +49,12 @@ describe("getConfig", () => {
   });
 
   it("parseia SEARCH_KEYWORDS em lista", () => {
-    vi.stubEnv("SEARCH_KEYWORDS", "Java","Spring","RabbitMQ","Docker");
+    const tempDir = mkdtempSync(path.join(tmpdir(), "jobs-config-"));
+    vi.stubEnv("KEYWORDS_FILE_PATH", path.join(tempDir, "missing-environment.json"));
+    vi.stubEnv("SEARCH_KEYWORDS", "Java,Spring,RabbitMQ,Docker");
+
     const config = getConfig();
-    expect(config.keywords).toEqual(["Java","Spring","RabbitMQ","Docker"]);
+    expect(config.keywords).toEqual(["Java", "Spring", "RabbitMQ", "Docker"]);
   });
 
   it("rejeita TIME_FILTER invalido e usa fallback", () => {
@@ -98,9 +105,24 @@ describe("getConfig", () => {
   });
 
   it("retorna keywords padrao quando lista informada e vazia", () => {
+    const tempDir = mkdtempSync(path.join(tmpdir(), "jobs-config-"));
+    vi.stubEnv("KEYWORDS_FILE_PATH", path.join(tempDir, "missing-environment.json"));
     vi.stubEnv("SEARCH_KEYWORDS", " ,  , ");
+
     const config = getConfig();
     expect(config.keywords.length).toBeGreaterThan(0);
     expect(config.keywords).toContain("Java");
+  });
+
+  it("preserva lista vazia quando o arquivo de keywords ja existe", () => {
+    const tempDir = mkdtempSync(path.join(tmpdir(), "jobs-config-"));
+    const keywordsFile = path.join(tempDir, "environment.json");
+    writeFileSync(keywordsFile, JSON.stringify({ KEYWORDS: [] }), "utf-8");
+
+    vi.stubEnv("KEYWORDS_FILE_PATH", keywordsFile);
+    vi.stubEnv("SEARCH_KEYWORDS", "Java,Node");
+
+    const config = getConfig();
+    expect(config.keywords).toEqual([]);
   });
 });
