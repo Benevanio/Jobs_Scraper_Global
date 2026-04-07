@@ -1,5 +1,8 @@
 import { existsSync, readFileSync } from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 const DEFAULT_KEYWORDS = [  
   "Java",
@@ -35,14 +38,29 @@ function parseNumber(value, fallback) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function getKeywordsFilePath() {
+  const configuredPath = process.env.KEYWORDS_FILE_PATH?.trim();
+  return configuredPath
+    ? path.resolve(configuredPath)
+    : path.resolve(MODULE_DIR, "db", "environment.json");
+}
+
+function normalizeKeywords(keywords) {
+  if (!Array.isArray(keywords)) {
+    return null;
+  }
+
+  return [...new Set(keywords.map((item) => String(item ?? "").trim()).filter(Boolean))];
+}
+
 function parseKeywords(value) {
   // Tenta pegar do arquivo environment.json
   try {
-    const envPath = path.resolve(process.cwd(), "src", "db", "environment.json");
+    const envPath = getKeywordsFilePath();
     if (existsSync(envPath)) {
       const data = JSON.parse(readFileSync(envPath, "utf-8"));
-      if (Array.isArray(data.KEYWORDS) && data.KEYWORDS.length > 0) {
-        return data.KEYWORDS;
+      if (Array.isArray(data.KEYWORDS)) {
+        return normalizeKeywords(data.KEYWORDS) ?? [];
       }
     }
   } catch (err) {

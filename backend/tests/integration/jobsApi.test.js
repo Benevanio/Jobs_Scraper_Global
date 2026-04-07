@@ -21,9 +21,11 @@ describe("jobs API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.run.mockResolvedValue(undefined);
+    delete process.env.KEYWORDS_FILE_PATH;
   });
 
   afterEach(() => {
+    delete process.env.KEYWORDS_FILE_PATH;
     tmpDir = undefined;
   });
 
@@ -176,6 +178,23 @@ describe("jobs API", () => {
       ok: true,
       message: "Keywords atualizadas com sucesso.",
       keywords: ["Java","Spring","RabbitMQ","Docker"]
+    });
+  });
+
+  it("POST /api/keywords cria o arquivo configurado e aceita lista vazia", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    process.env.KEYWORDS_FILE_PATH = join(tmpDir, "nested", "environment.json");
+
+    const app = createJobsApiApp({ outputDir: tmpDir });
+    const res = await request(app)
+      .post("/api/keywords")
+      .send({ keywords: ["  ", ""] })
+      .expect(200);
+
+    expect(res.body).toEqual({
+      ok: true,
+      message: "Keywords atualizadas com sucesso.",
+      keywords: [],
     });
   });
 

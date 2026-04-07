@@ -2,17 +2,56 @@ import cors from "cors";
 import express from "express";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import XLSX from "xlsx";
 import { run as runScraper } from "./app.js";
 import { getConfig } from "./config.js";
 import { searchJobsWithCache } from "./pipeline/searchJobsWithCache.js";
 import { sources } from "./sources/index.js";
 
+const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
+
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://painel-vagas-lake.vercel.app",
   "http://localhost:5173",
   "http://localhost:5174",
 ];
+
+function getKeywordsFilePath() {
+  const configuredPath = process.env.KEYWORDS_FILE_PATH?.trim();
+  return configuredPath
+    ? path.resolve(configuredPath)
+    : path.resolve(MODULE_DIR, "db", "environment.json");
+}
+
+function normalizeKeywords(keywords) {
+  if (!Array.isArray(keywords)) {
+    return null;
+  }
+
+  return [...new Set(keywords.map((item) => String(item ?? "").trim()).filter(Boolean))];
+}
+
+function readEnvironmentData() {
+  const envPath = getKeywordsFilePath();
+
+  if (!existsSync(envPath)) {
+    return { KEYWORDS: [] };
+  }
+
+  try {
+    const data = JSON.parse(readFileSync(envPath, "utf-8"));
+    return data && typeof data === "object" ? data : { KEYWORDS: [] };
+  } catch {
+    return { KEYWORDS: [] };
+  }
+}
+
+function writeEnvironmentData(data) {
+  const envPath = getKeywordsFilePath();
+  mkdirSync(path.dirname(envPath), { recursive: true });
+  writeFileSync(envPath, JSON.stringify(data, null, 2), "utf-8");
+}
 
 function parseAllowedOrigins(value) {
   const configuredOrigins = String(value ?? "")
@@ -258,27 +297,20 @@ export function createJobsApiApp(options = {}) {
  */
   app.post("/api/keywords", (req, res) => {
     try {
-      const { keywords } = req.body;
+      const normalizedKeywords = normalizeKeywords(req.body?.keywords);
 
-      if (!Array.isArray(keywords)) {
+      if (normalizedKeywords === null) {
         return res.status(400).json({
           message: "O campo 'keywords' deve ser um array de strings.",
         });
       }
 
-      const envPath = path.resolve(process.cwd(), "src", "db", "environment.json");
-      let envData = { KEYWORDS: [] };
+      const envData = {
+        ...readEnvironmentData(),
+        KEYWORDS: normalizedKeywords,
+      };
 
-      if (existsSync(envPath)) {
-        try {
-          envData = JSON.parse(readFileSync(envPath, "utf-8"));
-        } catch (e) {
-          // Se o arquivo estiver corrompido, reinicia com o objeto padrao
-        }
-      }
-
-      envData.KEYWORDS = keywords;
-      writeFileSync(envPath, JSON.stringify(envData, null, 2), "utf-8");
+      writeEnvironmentData(envData);
 
       return res.json({
         ok: true,
@@ -303,28 +335,21 @@ export function createJobsApiApp(options = {}) {
  *       200:
  *         description: Lista de keywords
  */
-  app.get("/api/keywords", (req, res) => {
-  try {
-    const envPath = path.resolve(process.cwd(), "src", "db", "environment.json");
-    
-    if (!existsSync(envPath)) {
-      return res.json({ keywords: [] });
+  app.get("/api/keywords", (_req, res) => {
+    try {
+      const envData = readEnvironmentData();
+
+      return res.json({
+        ok: true,
+        keywords: normalizeKeywords(envData.KEYWORDS) ?? [],
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro ao buscar keywords.",
+        error: error?.message || "Erro desconhecido",
+      });
     }
-
-    const fileContent = readFileSync(envPath, "utf-8");
-    const envData = JSON.parse(fileContent);
-
-    return res.json({
-      ok: true,
-      keywords: envData.KEYWORDS || [],
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Erro ao buscar keywords.",
-      error: error?.message || "Erro desconhecido",
-    });
-  }
-});
+  });
 
   /**
  * @swagger
