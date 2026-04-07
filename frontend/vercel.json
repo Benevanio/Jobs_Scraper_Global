@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "http://jobsglobalscraper.ddns.net/api/$1"
+    }
+  ]
+}

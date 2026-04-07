@@ -10,10 +10,6 @@ function getApiBaseUrl(): string {
     return configuredBaseUrl;
   }
 
-  if (typeof window !== "undefined" && window.location.hostname === "painel-vagas-lake.vercel.app") {
-    return "https://jobsglobalscraper.ddns.net";
-  }
-
   return "";
 }
 
