@@ -13,6 +13,7 @@ const outputDir = process.env.ELECTRON_OUTPUT_DIR
   : path.resolve(process.cwd(), "output");
 
 const app = createJobsApiApp({ outputDir });
+app.set("trust proxy", 1);
 
 async function registerSwaggerDocs() {
   try {

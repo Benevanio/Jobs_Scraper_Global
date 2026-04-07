@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   listen: vi.fn(),
   use: vi.fn(),
+  set: vi.fn(),
   createJobsApiApp: vi.fn(),
   consoleLog: vi.fn(),
   existsSync: vi.fn(),
@@ -16,6 +17,7 @@ const mocks = vi.hoisted(() => ({
 mocks.createJobsApiApp.mockReturnValue({
   listen: mocks.listen,
   use: mocks.use,
+  set: mocks.set,
 });
 
 mocks.expressStatic.mockReturnValue(mocks.staticMiddleware);
@@ -68,8 +70,8 @@ describe("server entry", () => {
     await importServerEntry();
 
     expect(mocks.createJobsApiApp).toHaveBeenCalledTimes(1);
-    expect(mocks.listen).toHaveBeenCalled();
-    expect(mocks.listen.mock.calls[0][0]).toBe(3100);
+    expect(mocks.set).toHaveBeenCalledWith("trust proxy", 1);
+    expect(mocks.listen).toHaveBeenCalled();    expect(mocks.listen.mock.calls[0][0]).toBe(3100);
     expect(typeof mocks.listen.mock.calls[0][1]).toBe("function");
 
     const onListen = mocks.listen.mock.calls[0][1];

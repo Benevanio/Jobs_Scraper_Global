@@ -40,6 +40,28 @@ describe("jobs API", () => {
     const res = await request(app).get("/api/jobs/files").expect(200);
     expect(res.body.files).toEqual([]);
   });
+
+  it("permite CORS para o frontend oficial", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    const app = createJobsApiApp({ outputDir: tmpDir });
+    const res = await request(app)
+      .get("/api/health")
+      .set("Origin", "https://painel-vagas-lake.vercel.app")
+      .expect(200);
+
+    expect(res.headers["access-control-allow-origin"]).toBe("https://painel-vagas-lake.vercel.app");
+  });
+
+  it("bloqueia origens nao autorizadas", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    const app = createJobsApiApp({ outputDir: tmpDir });
+    const res = await request(app)
+      .get("/api/health")
+      .set("Origin", "https://malicioso.example")
+      .expect(403);
+
+    expect(res.body.message).toBe("Origem nao permitida.");
+  });
   
   it("GET /api/jobs retorna 404 quando nao ha planilhas", async () => {
     tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));

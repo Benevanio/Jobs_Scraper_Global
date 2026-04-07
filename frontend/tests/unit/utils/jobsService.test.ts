@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 describe("jobsService", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   it("retorna lista de arquivos", async () => {
@@ -14,6 +15,15 @@ describe("jobsService", () => {
 
     const files = await fetchJobFiles();
     expect(files).toEqual([{ file: "vagas.xlsx" }]);
+  });
+
+  it("usa a URL da VPS quando VITE_API_BASE_URL estiver configurada", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "https://jobsglobalscraper.ddns.net/");
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ files: [] }) }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchJobFiles();
+    expect(fetchMock).toHaveBeenCalledWith("https://jobsglobalscraper.ddns.net/api/jobs/files");
   });
 
   it("filtra entradas invalidas ao listar arquivos", async () => {
