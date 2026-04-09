@@ -9,6 +9,9 @@ services:
       - ./backend/.env
     environment:
       - PORT=3001
+      - KEYWORDS_STORAGE_MODE=${KEYWORDS_STORAGE_MODE:-env}
+      - CACHE_TTL_MS=${CACHE_TTL_MS:-600000}
+      - REDIS_KEY_PREFIX=${REDIS_KEY_PREFIX:-vagas-full}
     volumes:
       - ./backend/output:/app/output
     ports:

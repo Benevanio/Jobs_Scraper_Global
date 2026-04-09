@@ -34,7 +34,7 @@ export async function searchJobsWithCache(
 ) {
   const cacheKey = buildCacheKey(config);
 
-  const cached = cache.get(cacheKey);
+  const cached = await cache.get(cacheKey);
   if (cached) {
     return {
       ...cached,
@@ -43,7 +43,7 @@ export async function searchJobsWithCache(
   }
 
   return withRequestDedup(cacheKey, async () => {
-    const cachedInsideDedup = cache.get(cacheKey);
+    const cachedInsideDedup = await cache.get(cacheKey);
     if (cachedInsideDedup) {
       return {
         ...cachedInsideDedup,
@@ -60,7 +60,7 @@ export async function searchJobsWithCache(
       fromCache: false,
     };
 
-    cache.set(cacheKey, result, ttlMs);
+    await cache.set(cacheKey, result, ttlMs);
 
     return result;
   });

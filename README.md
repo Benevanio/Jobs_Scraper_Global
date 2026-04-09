@@ -134,6 +134,29 @@ npm run dev:frontend
 npm run dev:backend
 ```
 
+## Configuracao segura na VPS (Redis / Postgres)
+
+Para ambiente de VPS e projeto open source, **nao coloque `DATABASE_URL` nem `REDIS_URL` em `environment.json`**.
+Use somente `backend/.env` no servidor (arquivo ignorado pelo Git) e mantenha `KEYWORDS_STORAGE_MODE=env`.
+
+Exemplo seguro:
+
+```env
+KEYWORDS_STORAGE_MODE=env
+SEARCH_KEYWORDS=Java,Spring,RabbitMQ,Docker
+DATABASE_URL=postgresql://app_user:senha_forte@127.0.0.1:5432/jobsglobalscraper
+REDIS_URL=redis://:senha_forte@127.0.0.1:6379/0
+REDIS_KEY_PREFIX=vagas-full
+CACHE_TTL_MS=600000
+```
+
+Recomendacoes:
+
+- use `127.0.0.1` ou a rede interna do Docker na VPS, em vez de expor Redis publicamente
+- prefira `rediss://` se o Redis estiver fora da maquina local/VPS
+- mantenha a porta `6379` fechada para acesso externo no firewall
+- com `KEYWORDS_STORAGE_MODE=env`, o backend deixa de depender de `backend/src/db/environment.json` em producao
+
 ## Scripts principais
 
 ### Raiz
