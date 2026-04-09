@@ -133,10 +133,6 @@ export function getConfig() {
     // f_TPR examples: r86400 (24h), r604800 (7 dias), r2592000 (30 dias)
     timeFilter: parseTimeFilter(process.env.TIME_FILTER, "r604800"),
     keywords: parseKeywords(process.env.SEARCH_KEYWORDS),
-    keywordsStorageMode: getKeywordsStorageMode(),
-    cacheTtlMs: parseNumber(process.env.CACHE_TTL_MS, 10 * 60 * 1000),
-    databaseUrl: process.env.DATABASE_URL?.trim() || "",
-    redisUrl: process.env.REDIS_URL?.trim() || "",
-    redisKeyPrefix: process.env.REDIS_KEY_PREFIX?.trim() || "vagas-full"
+    keywordsStorageMode: getKeywordsStorageMode()
   };
 }
