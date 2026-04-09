@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { existsSync } from "fs";
 import path from "path";
+import { warmupCache } from "./cache/cache.js";
 import { createJobsApiApp } from "./jobsApiApp.js";
 
 const PORT = Number(process.env.PORT || 3001);
@@ -31,6 +32,14 @@ async function registerSwaggerDocs() {
 
 async function startServer() {
   await registerSwaggerDocs();
+
+  const cacheStatus = await warmupCache();
+  // eslint-disable-next-line no-console
+  console.log(
+    cacheStatus.configured
+      ? `Cache provider: ${cacheStatus.provider} (${cacheStatus.connected ? "conectado" : "fallback em memoria"})`
+      : "Cache provider: memory (REDIS_URL nao configurada)",
+  );
 
   // ── Electron static-file serving ─────────────────────────────────────────
   // When ELECTRON_STATIC_DIR is set, serve the React production build so that

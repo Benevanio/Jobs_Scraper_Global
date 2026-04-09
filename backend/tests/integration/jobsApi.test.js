@@ -24,20 +24,30 @@ describe("jobs API", () => {
     delete process.env.KEYWORDS_FILE_PATH;
     delete process.env.KEYWORDS_STORAGE_MODE;
     delete process.env.SEARCH_KEYWORDS;
+    delete process.env.REDIS_URL;
+    delete process.env.KEYWORDS_REDIS_KEY;
   });
 
   afterEach(() => {
     delete process.env.KEYWORDS_FILE_PATH;
     delete process.env.KEYWORDS_STORAGE_MODE;
     delete process.env.SEARCH_KEYWORDS;
+    delete process.env.REDIS_URL;
+    delete process.env.KEYWORDS_REDIS_KEY;
     tmpDir = undefined;
   });
 
-  it("GET /api/health retorna ok", async () => {
+  it("GET /api/health retorna ok com status do cache", async () => {
     tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
     const app = createJobsApiApp({ outputDir: tmpDir });
     const res = await request(app).get("/api/health").expect(200);
-    expect(res.body).toEqual({ ok: true });
+
+    expect(res.body.ok).toBe(true);
+    expect(res.body.cache).toMatchObject({
+      configured: false,
+      connected: false,
+      provider: "memory",
+    });
   });
   
   it("GET /api/jobs/files retorna lista vazia sem xlsx", async () => {

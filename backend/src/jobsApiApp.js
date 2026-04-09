@@ -1,95 +1,21 @@
 import cors from "cors";
 import express from "express";
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, statSync } from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import XLSX from "xlsx";
 import { run as runScraper } from "./app.js";
+import { getCacheStatus } from "./cache/cache.js";
 import { getConfig } from "./config.js";
+import { loadKeywords, normalizeKeywords, saveKeywords } from "./db/keywordsStore.js";
 import { searchJobsWithCache } from "./pipeline/searchJobsWithCache.js";
 import { sources } from "./sources/index.js";
 
-const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
-
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://painel-vagas-lake.vercel.app",
+  "https://painel-vagas-m6hbzlqeh-bene-teslas-projects.vercel.app",
   "http://localhost:5173",
   "http://localhost:5174",
 ];
-
-function getKeywordsStorageMode() {
-  const configuredMode = String(process.env.KEYWORDS_STORAGE_MODE ?? "file")
-    .trim()
-    .toLowerCase();
-
-  return configuredMode === "env" ? "env" : "file";
-}
-
-function getKeywordsFilePath() {
-  const configuredPath = process.env.KEYWORDS_FILE_PATH?.trim();
-  return configuredPath
-    ? path.resolve(configuredPath)
-    : path.resolve(MODULE_DIR, "db", "environment.json");
-}
-
-function normalizeKeywords(keywords) {
-  if (!Array.isArray(keywords)) {
-    return null;
-  }
-
-  return [...new Set(keywords.map((item) => String(item ?? "").trim()).filter(Boolean))];
-}
-
-function parseKeywordsFromEnv(value) {
-  return normalizeKeywords(
-    String(value ?? "")
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean),
-  ) ?? [];
-}
-
-function readEnvironmentData() {
-  if (getKeywordsStorageMode() === "env") {
-    return { KEYWORDS: parseKeywordsFromEnv(process.env.SEARCH_KEYWORDS) };
-  }
-
-  const envPath = getKeywordsFilePath();
-
-  if (!existsSync(envPath)) {
-    return { KEYWORDS: [] };
-  }
-
-  try {
-    const data = JSON.parse(readFileSync(envPath, "utf-8"));
-    return data && typeof data === "object" ? data : { KEYWORDS: [] };
-  } catch {
-    return { KEYWORDS: [] };
-  }
-}
-
-function writeEnvironmentData(data) {
-  const normalizedKeywords = normalizeKeywords(data?.KEYWORDS) ?? [];
-
-  if (getKeywordsStorageMode() === "env") {
-    process.env.SEARCH_KEYWORDS = normalizedKeywords.join(",");
-    return {
-      ...(data && typeof data === "object" ? data : {}),
-      KEYWORDS: normalizedKeywords,
-    };
-  }
-
-  const envPath = getKeywordsFilePath();
-  mkdirSync(path.dirname(envPath), { recursive: true });
-
-  const nextData = {
-    ...(data && typeof data === "object" ? data : {}),
-    KEYWORDS: normalizedKeywords,
-  };
-
-  writeFileSync(envPath, JSON.stringify(nextData, null, 2), "utf-8");
-  return nextData;
-}
 
 function parseAllowedOrigins(value) {
   const configuredOrigins = String(value ?? "")
@@ -187,7 +113,10 @@ export function createJobsApiApp(options = {}) {
  *         description: API funcionando corretamente
  */
   app.get("/api/health", (_req, res) => {
-    res.json({ ok: true });
+    res.json({
+      ok: true,
+      cache: getCacheStatus(),
+    });
   });
 
   /**
@@ -237,16 +166,18 @@ export function createJobsApiApp(options = {}) {
   // Novo endpoint para busca de vagas com cache
   app.get("/api/jobs/search", async (req, res) => {
     try {
+      const baseConfig = getConfig();
       const config = {
-        ...getConfig(),
+        ...baseConfig,
         keywords: req.query.keywords
           ? String(req.query.keywords)
               .split(",")
               .map((k) => k.trim())
-          : getConfig().keywords,
+              .filter(Boolean)
+          : await loadKeywords(baseConfig.keywords),
       };
 
-      const ttlMs = 10 * 60 * 1000; // 10 minutos
+      const ttlMs = baseConfig.cacheTtlMs;
       const result = await searchJobsWithCache(sources, config, ttlMs);
 
       return res.json(result);
@@ -333,7 +264,7 @@ export function createJobsApiApp(options = {}) {
  *       400:
  *         description: Dados inválidos
  */
-  app.post("/api/keywords", (req, res) => {
+  app.post("/api/keywords", async (req, res) => {
     try {
       const normalizedKeywords = normalizeKeywords(req.body?.keywords);
 
@@ -343,15 +274,12 @@ export function createJobsApiApp(options = {}) {
         });
       }
 
-      const envData = writeEnvironmentData({
-        ...readEnvironmentData(),
-        KEYWORDS: normalizedKeywords,
-      });
+      const savedKeywords = await saveKeywords(normalizedKeywords);
 
       return res.json({
         ok: true,
         message: "Keywords atualizadas com sucesso.",
-        keywords: envData.KEYWORDS,
+        keywords: savedKeywords,
       });
     } catch (error) {
       return res.status(500).json({
@@ -371,13 +299,13 @@ export function createJobsApiApp(options = {}) {
  *       200:
  *         description: Lista de keywords
  */
-  app.get("/api/keywords", (_req, res) => {
+  app.get("/api/keywords", async (_req, res) => {
     try {
-      const envData = readEnvironmentData();
+      const keywords = await loadKeywords(getConfig().keywords);
 
       return res.json({
         ok: true,
-        keywords: normalizeKeywords(envData.KEYWORDS) ?? [],
+        keywords,
       });
     } catch (error) {
       return res.status(500).json({

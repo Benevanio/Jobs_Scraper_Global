@@ -1,7 +1,33 @@
 let redisClientPromise = null;
+let redisClientUrl = "";
 let redisWarningShown = false;
 
+const cacheStatus = {
+  provider: "memory",
+  configured: false,
+  connected: false,
+  lastError: null,
+};
+
+function readRedisUrl() {
+  return process.env.REDIS_URL?.trim() || "";
+}
+
+function syncCacheStatus() {
+  const redisUrl = readRedisUrl();
+  cacheStatus.configured = Boolean(redisUrl);
+  cacheStatus.provider = redisUrl ? "redis" : "memory";
+
+  if (!redisUrl) {
+    cacheStatus.connected = false;
+    cacheStatus.lastError = null;
+  }
+}
+
 function warnRedisFallback(message, error) {
+  cacheStatus.connected = false;
+  cacheStatus.lastError = error instanceof Error ? error.message : null;
+
   if (redisWarningShown) {
     return;
   }
@@ -13,11 +39,17 @@ function warnRedisFallback(message, error) {
   console.warn(`${message}${errorMessage ? ` (${errorMessage})` : ""}`);
 }
 
-async function getRedisClient() {
-  const redisUrl = process.env.REDIS_URL?.trim();
+export async function getRedisClient() {
+  const redisUrl = readRedisUrl();
+  syncCacheStatus();
 
   if (!redisUrl) {
     return null;
+  }
+
+  if (redisClientUrl !== redisUrl) {
+    redisClientPromise = null;
+    redisClientUrl = redisUrl;
   }
 
   if (!redisClientPromise) {
@@ -26,10 +58,24 @@ async function getRedisClient() {
         const client = createClient({
           url: redisUrl,
           socket: {
+            connectTimeout: 3_000,
             reconnectStrategy(retries) {
-              return Math.min(retries * 50, 1_000);
+              if (retries >= 2) {
+                return false;
+              }
+
+              return Math.min((retries + 1) * 100, 500);
             },
           },
+        });
+
+        client.on("ready", () => {
+          cacheStatus.connected = true;
+          cacheStatus.lastError = null;
+        });
+
+        client.on("end", () => {
+          cacheStatus.connected = false;
         });
 
         client.on("error", (error) => {
@@ -47,6 +93,37 @@ async function getRedisClient() {
   }
 
   return redisClientPromise;
+}
+
+export function getCacheStatus() {
+  syncCacheStatus();
+  return {
+    ...cacheStatus,
+    type: cache.constructor.name,
+  };
+}
+
+export async function warmupCache() {
+  syncCacheStatus();
+
+  if (!cacheStatus.configured) {
+    return getCacheStatus();
+  }
+
+  const client = await getRedisClient();
+  if (!client) {
+    return getCacheStatus();
+  }
+
+  try {
+    const pong = await client.ping();
+    cacheStatus.connected = pong === "PONG";
+    cacheStatus.lastError = cacheStatus.connected ? null : "PING sem resposta esperada";
+  } catch (error) {
+    warnRedisFallback("Falha ao validar conexao com Redis.", error);
+  }
+
+  return getCacheStatus();
 }
 
 export class MemoryCache {
