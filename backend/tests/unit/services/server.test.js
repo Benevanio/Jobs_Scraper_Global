@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   expressStatic: vi.fn(),
   swaggerServe: vi.fn(),
   swaggerSetup: vi.fn(() => vi.fn()),
+  warmupCache: vi.fn(),
 }));
 
 mocks.createJobsApiApp.mockReturnValue({
@@ -21,8 +22,12 @@ mocks.createJobsApiApp.mockReturnValue({
 });
 
 mocks.expressStatic.mockReturnValue(mocks.staticMiddleware);
-
+mocks.warmupCache.mockResolvedValue({ provider: "memory", configured: false, connected: false });
 vi.mock("dotenv/config", () => ({}));
+
+vi.mock("../../../src/cache/cache.js", () => ({
+  warmupCache: mocks.warmupCache,
+}));
 
 vi.mock("../../../src/jobsApiApp.js", () => ({
   createJobsApiApp: mocks.createJobsApiApp,
@@ -52,6 +57,8 @@ vi.mock("../../../src/swagger.js", () => ({
 async function importServerEntry() {
   await import("../../../src/server.js");
   await vi.dynamicImportSettled();
+  await Promise.resolve();
+  await Promise.resolve();
   await Promise.resolve();
 }
 

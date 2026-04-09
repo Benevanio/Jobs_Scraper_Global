@@ -1,10 +1,4 @@
-import { existsSync, readFileSync } from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
-
-const DEFAULT_KEYWORDS = [  
+const DEFAULT_KEYWORDS = [
   "Java",
   "JavaScript",
   "React",
@@ -38,11 +32,12 @@ function parseNumber(value, fallback) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-function getKeywordsFilePath() {
-  const configuredPath = process.env.KEYWORDS_FILE_PATH?.trim();
-  return configuredPath
-    ? path.resolve(configuredPath)
-    : path.resolve(MODULE_DIR, "db", "environment.json");
+function getKeywordsStorageMode() {
+  const configuredMode = String(process.env.KEYWORDS_STORAGE_MODE ?? "redis")
+    .trim()
+    .toLowerCase();
+
+  return configuredMode === "env" ? "env" : "redis";
 }
 
 function normalizeKeywords(keywords) {
@@ -53,31 +48,19 @@ function normalizeKeywords(keywords) {
   return [...new Set(keywords.map((item) => String(item ?? "").trim()).filter(Boolean))];
 }
 
-function parseKeywords(value) {
-  // Tenta pegar do arquivo environment.json
-  try {
-    const envPath = getKeywordsFilePath();
-    if (existsSync(envPath)) {
-      const data = JSON.parse(readFileSync(envPath, "utf-8"));
-      if (Array.isArray(data.KEYWORDS)) {
-        return normalizeKeywords(data.KEYWORDS) ?? [];
-      }
-    }
-  } catch (err) {
-    // Se falhar, fallback
-  }
-
-  // Tenta pegar da variavel de ambiente
-  if (value) {
-    const keywords = value
+function parseKeywordsFromEnv(value) {
+  const keywords = normalizeKeywords(
+    String(value ?? "")
       .split(",")
       .map((item) => item.trim())
-      .filter(Boolean);
-    if (keywords.length > 0) return keywords;
-  }
+      .filter(Boolean),
+  );
 
-  // Fallback para as keywords padrao
-  return DEFAULT_KEYWORDS;
+  return keywords?.length ? keywords : null;
+}
+
+function parseKeywords(value) {
+  return parseKeywordsFromEnv(value) ?? DEFAULT_KEYWORDS;
 }
 
 function parseTimeFilter(value, fallback) {
@@ -97,7 +80,7 @@ export function getConfig() {
     maxPagesPerKeyword: parseNumber(process.env.MAX_PAGES_PER_KEYWORD, 5),
     viewport: {
       width: parseNumber(process.env.VIEWPORT_WIDTH, 1280),
-      height: parseNumber(process.env.VIEWPORT_HEIGHT, 800)
+      height: parseNumber(process.env.VIEWPORT_HEIGHT, 800),
     },
     outputFile: process.env.OUTPUT_FILE || "output/vagas_remoto.xlsx",
     pdfFile: process.env.PDF_FILE || "output/vagas_remoto.pdf",
@@ -108,6 +91,11 @@ export function getConfig() {
     jobTypes: process.env.JOB_TYPES || "C,F",
     // f_TPR examples: r86400 (24h), r604800 (7 dias), r2592000 (30 dias)
     timeFilter: parseTimeFilter(process.env.TIME_FILTER, "r604800"),
-    keywords: parseKeywords(process.env.SEARCH_KEYWORDS)
+    keywords: parseKeywords(process.env.SEARCH_KEYWORDS),
+    keywordsStorageMode: getKeywordsStorageMode(),
+    cacheTtlMs: parseNumber(process.env.CACHE_TTL_MS, 10 * 60 * 1000),
+    databaseUrl: process.env.DATABASE_URL?.trim() || "",
+    redisUrl: process.env.REDIS_URL?.trim() || "",
+    redisKeyPrefix: process.env.REDIS_KEY_PREFIX?.trim() || "vagas-full",
   };
 }

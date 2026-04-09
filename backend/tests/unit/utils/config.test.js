@@ -1,6 +1,3 @@
-import { mkdtempSync, writeFileSync } from "fs";
-import { tmpdir } from "os";
-import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getConfig } from "../../../src/config.js";
 
@@ -21,6 +18,7 @@ const CONFIG_ENV_KEYS = [
   "TIME_FILTER",
   "SEARCH_KEYWORDS",
   "KEYWORDS_FILE_PATH",
+  "KEYWORDS_STORAGE_MODE",
 ];
 
 describe("getConfig", () => {
@@ -49,12 +47,20 @@ describe("getConfig", () => {
   });
 
   it("parseia SEARCH_KEYWORDS em lista", () => {
-    const tempDir = mkdtempSync(path.join(tmpdir(), "jobs-config-"));
-    vi.stubEnv("KEYWORDS_FILE_PATH", path.join(tempDir, "missing-environment.json"));
     vi.stubEnv("SEARCH_KEYWORDS", "Java,Spring,RabbitMQ,Docker");
 
     const config = getConfig();
     expect(config.keywords).toEqual(["Java", "Spring", "RabbitMQ", "Docker"]);
+  });
+
+  it("ignora o modo legado de arquivo e usa SEARCH_KEYWORDS como fallback local", () => {
+    vi.stubEnv("KEYWORDS_FILE_PATH", "/tmp/legacy-environment.json");
+    vi.stubEnv("KEYWORDS_STORAGE_MODE", "file");
+    vi.stubEnv("SEARCH_KEYWORDS", "Java,Spring,RabbitMQ,Docker");
+
+    const config = getConfig();
+    expect(config.keywords).toEqual(["Java", "Spring", "RabbitMQ", "Docker"]);
+    expect(config.keywordsStorageMode).toBe("redis");
   });
 
   it("rejeita TIME_FILTER invalido e usa fallback", () => {
@@ -105,8 +111,6 @@ describe("getConfig", () => {
   });
 
   it("retorna keywords padrao quando lista informada e vazia", () => {
-    const tempDir = mkdtempSync(path.join(tmpdir(), "jobs-config-"));
-    vi.stubEnv("KEYWORDS_FILE_PATH", path.join(tempDir, "missing-environment.json"));
     vi.stubEnv("SEARCH_KEYWORDS", " ,  , ");
 
     const config = getConfig();
@@ -114,15 +118,10 @@ describe("getConfig", () => {
     expect(config.keywords).toContain("Java");
   });
 
-  it("preserva lista vazia quando o arquivo de keywords ja existe", () => {
-    const tempDir = mkdtempSync(path.join(tmpdir(), "jobs-config-"));
-    const keywordsFile = path.join(tempDir, "environment.json");
-    writeFileSync(keywordsFile, JSON.stringify({ KEYWORDS: [] }), "utf-8");
-
-    vi.stubEnv("KEYWORDS_FILE_PATH", keywordsFile);
-    vi.stubEnv("SEARCH_KEYWORDS", "Java,Node");
-
+  it("retorna keywords padrao quando SEARCH_KEYWORDS não existe", () => {
     const config = getConfig();
-    expect(config.keywords).toEqual([]);
+
+    expect(config.keywords).toContain("Java");
+    expect(config.keywordsStorageMode).toBe("redis");
   });
 });

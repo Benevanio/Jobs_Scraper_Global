@@ -1,4 +1,4 @@
-import { mkdtempSync } from "fs";
+import { existsSync, mkdtempSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import request from "supertest";
@@ -7,10 +7,34 @@ import XLSX from "xlsx";
 
 const mocks = vi.hoisted(() => ({
   run: vi.fn(),
+  searchJobsWithCache: vi.fn(),
+  loadKeywords: vi.fn(),
+  saveKeywords: vi.fn(),
+  getCacheStatus: vi.fn(),
 }));
 
 vi.mock("../../src/app.js", () => ({
   run: mocks.run,
+}));
+
+vi.mock("../../src/pipeline/searchJobsWithCache.js", () => ({
+  searchJobsWithCache: mocks.searchJobsWithCache,
+}));
+
+vi.mock("../../src/db/keywordsStore.js", () => ({
+  loadKeywords: mocks.loadKeywords,
+  normalizeKeywords: (keywords) => {
+    if (!Array.isArray(keywords)) {
+      return null;
+    }
+
+    return [...new Set(keywords.map((item) => String(item ?? "").trim()).filter(Boolean))];
+  },
+  saveKeywords: mocks.saveKeywords,
+}));
+
+vi.mock("../../src/cache/cache.js", () => ({
+  getCacheStatus: mocks.getCacheStatus,
 }));
 
 import { createJobsApiApp } from "../../src/jobsApiApp.js";
@@ -21,19 +45,53 @@ describe("jobs API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.run.mockResolvedValue(undefined);
+    mocks.searchJobsWithCache.mockResolvedValue({
+      jobs: [{ titulo: "Dev", empresa: "ACME" }],
+      total: 1,
+      fromCache: false,
+      cachedAt: "2026-04-09T00:00:00.000Z",
+    });
+    mocks.loadKeywords.mockResolvedValue(["Java", "Spring", "RabbitMQ", "Docker"]);
+    mocks.saveKeywords.mockImplementation(async (keywords) => {
+      if (process.env.KEYWORDS_STORAGE_MODE === "env") {
+        process.env.SEARCH_KEYWORDS = keywords.join(",");
+      }
+
+      return keywords;
+    });
+    mocks.getCacheStatus.mockReturnValue({
+      configured: false,
+      connected: false,
+      provider: "memory",
+      type: "MemoryCache",
+    });
     delete process.env.KEYWORDS_FILE_PATH;
+    delete process.env.KEYWORDS_STORAGE_MODE;
+    delete process.env.SEARCH_KEYWORDS;
+    delete process.env.REDIS_URL;
+    delete process.env.KEYWORDS_REDIS_KEY;
   });
 
   afterEach(() => {
     delete process.env.KEYWORDS_FILE_PATH;
+    delete process.env.KEYWORDS_STORAGE_MODE;
+    delete process.env.SEARCH_KEYWORDS;
+    delete process.env.REDIS_URL;
+    delete process.env.KEYWORDS_REDIS_KEY;
     tmpDir = undefined;
   });
 
-  it("GET /api/health retorna ok", async () => {
+  it("GET /api/health retorna ok com status do cache", async () => {
     tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
     const app = createJobsApiApp({ outputDir: tmpDir });
     const res = await request(app).get("/api/health").expect(200);
-    expect(res.body).toEqual({ ok: true });
+
+    expect(res.body.ok).toBe(true);
+    expect(res.body.cache).toMatchObject({
+      configured: false,
+      connected: false,
+      provider: "memory",
+    });
   });
   
   it("GET /api/jobs/files retorna lista vazia sem xlsx", async () => {
@@ -198,6 +256,27 @@ describe("jobs API", () => {
     });
   });
 
+  it("POST /api/keywords em modo env atualiza sem depender de arquivo json", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    process.env.KEYWORDS_STORAGE_MODE = "env";
+    process.env.KEYWORDS_FILE_PATH = join(tmpDir, "nested", "environment.json");
+    process.env.SEARCH_KEYWORDS = "Java,Node";
+
+    const app = createJobsApiApp({ outputDir: tmpDir });
+    const res = await request(app)
+      .post("/api/keywords")
+      .send({ keywords: ["Redis", "PostgreSQL"] })
+      .expect(200);
+
+    expect(res.body).toEqual({
+      ok: true,
+      message: "Keywords atualizadas com sucesso.",
+      keywords: ["Redis", "PostgreSQL"],
+    });
+    expect(process.env.SEARCH_KEYWORDS).toBe("Redis,PostgreSQL");
+    expect(existsSync(process.env.KEYWORDS_FILE_PATH)).toBe(false);
+  });
+
   it("GET /api/keywords retorna 200 com as keywords", async () => {
     const app = createJobsApiApp({ outputDir: tmpDir });
     const res = await request(app)
@@ -207,5 +286,107 @@ describe("jobs API", () => {
       keywords: ["Java","Spring","RabbitMQ","Docker"]
     });
   });
-  
+
+  it("GET /api/jobs/search usa keywords da query quando fornecidas", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    const app = createJobsApiApp({ outputDir: tmpDir });
+
+    const res = await request(app)
+      .get("/api/jobs/search")
+      .query({ keywords: " Node, React ,, " })
+      .expect(200);
+
+    expect(res.body.total).toBe(1);
+    expect(mocks.loadKeywords).not.toHaveBeenCalled();
+    expect(mocks.searchJobsWithCache).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.objectContaining({ keywords: ["Node", "React"] }),
+      expect.anything(),
+    );
+  });
+
+  it("GET /api/jobs/search usa keywords salvas quando a query não é enviada", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    mocks.loadKeywords.mockResolvedValueOnce(["Redis", "PostgreSQL"]);
+    const app = createJobsApiApp({ outputDir: tmpDir });
+
+    await request(app).get("/api/jobs/search").expect(200);
+
+    expect(mocks.loadKeywords).toHaveBeenCalledTimes(1);
+    expect(mocks.searchJobsWithCache).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.objectContaining({ keywords: ["Redis", "PostgreSQL"] }),
+      expect.anything(),
+    );
+  });
+
+  it("GET /api/jobs/search retorna 500 quando a busca falha", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    mocks.searchJobsWithCache.mockRejectedValueOnce(new Error("falha na busca"));
+    const app = createJobsApiApp({ outputDir: tmpDir });
+
+    const res = await request(app)
+      .get("/api/jobs/search")
+      .query({ keywords: "Java" })
+      .expect(500);
+
+    expect(res.body).toEqual({
+      message: "Erro ao buscar vagas.",
+      error: "falha na busca",
+    });
+  });
+
+  it("POST /api/keywords retorna 400 quando keywords não é array", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    const app = createJobsApiApp({ outputDir: tmpDir });
+
+    const res = await request(app)
+      .post("/api/keywords")
+      .send({ keywords: "Java" })
+      .expect(400);
+
+    expect(res.body.message).toBe("O campo 'keywords' deve ser um array de strings.");
+  });
+
+  it("POST /api/keywords retorna 500 quando saveKeywords falha", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    mocks.saveKeywords.mockRejectedValueOnce(new Error("redis down"));
+    const app = createJobsApiApp({ outputDir: tmpDir });
+
+    const res = await request(app)
+      .post("/api/keywords")
+      .send({ keywords: ["Java"] })
+      .expect(500);
+
+    expect(res.body).toEqual({
+      message: "Erro ao salvar keywords.",
+      error: "redis down",
+    });
+  });
+
+  it("GET /api/keywords retorna 500 quando loadKeywords falha", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    mocks.loadKeywords.mockRejectedValueOnce(new Error("read failed"));
+    const app = createJobsApiApp({ outputDir: tmpDir });
+
+    const res = await request(app).get("/api/keywords").expect(500);
+
+    expect(res.body).toEqual({
+      message: "Erro ao buscar keywords.",
+      error: "read failed",
+    });
+  });
+
+  it("adiciona HSTS quando a requisição chega por HTTPS via proxy", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    const app = createJobsApiApp({ outputDir: tmpDir });
+
+    const res = await request(app)
+      .get("/api/health")
+      .set("x-forwarded-proto", "https")
+      .expect(200);
+
+    expect(res.headers["strict-transport-security"]).toContain("max-age=31536000");
+  });
+
 });
