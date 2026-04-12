@@ -20,4 +20,4 @@ backend/coverage/
 .nyc_output/
 
 # Dist-electron
-dist-electron/
+dist-electron/.sfdx/
