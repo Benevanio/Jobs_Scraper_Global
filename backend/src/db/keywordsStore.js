@@ -1,4 +1,4 @@
-import { getRedisClient } from "../cache/cache.js";
+import { getRedisClient } from "../cache/redisConnection.js";
 
 function getKeywordsRedisKey() {
   const configuredKey = process.env.KEYWORDS_REDIS_KEY?.trim();

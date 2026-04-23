@@ -4,8 +4,9 @@ const mocks = vi.hoisted(() => ({
   getRedisClient: vi.fn(),
 }));
 
-vi.mock("../../../../src/cache/cache.js", () => ({
+vi.mock("../../../../src/cache/redisConnection.js", () => ({
   getRedisClient: mocks.getRedisClient,
+  isRedisConnected: vi.fn().mockReturnValue(false),
 }));
 
 async function importKeywordsStore() {
