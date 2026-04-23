@@ -32,10 +32,13 @@ describe("JobsFiltersCard", () => {
       />,
     );
 
-    fireEvent.change(screen.getByPlaceholderText(/buscar/i), { target: { value: "node" } });
+    fireEvent.change(screen.getByPlaceholderText(/buscar/i), {
+      target: { value: "node" },
+    });
+
     fireEvent.click(screen.getByRole("button", { name: /atualizar/i }));
 
-    expect(setSearch).toHaveBeenCalled();
+    expect(setSearch).toHaveBeenCalledWith("node");
     expect(onRefresh).toHaveBeenCalledTimes(1);
   });
 
@@ -54,10 +57,16 @@ describe("JobsFiltersCard", () => {
       />,
     );
 
-    expect(screen.getAllByText("vagas.xlsx").length).toBeGreaterThan(0);
-    expect(screen.getByText("1 vagas")).toBeInTheDocument();
-    expect(screen.getByText(/filtros selecionados/i)).toBeInTheDocument();
-    expect(screen.getByText(/use o botão filtrar/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/vagas\.xlsx/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/1 vagas/i)).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/filtros selecionados/i)
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/use o botão filtrar/i)
+    ).toBeInTheDocument();
   });
 
   it("dispara mudancas nos filtros de keyword e arquivo", () => {
@@ -79,8 +88,14 @@ describe("JobsFiltersCard", () => {
     );
 
     const selects = screen.getAllByRole("combobox");
-    fireEvent.change(selects[0], { target: { value: "React" } });
-    fireEvent.change(selects[1], { target: { value: "historico.xlsx" } });
+
+    fireEvent.change(selects[0], {
+      target: { value: "React" },
+    });
+
+    fireEvent.change(selects[1], {
+      target: { value: "historico.xlsx" },
+    });
 
     expect(setKeywordFilter).toHaveBeenCalled();
     expect(setSelectedFile).toHaveBeenCalled();
@@ -105,11 +120,16 @@ describe("JobsFiltersCard", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /^filtrar$/i }));
-    expect(screen.getByText(/gerenciar filtros/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /limpar filtros/i }));
+    expect(
+      screen.getByText(/gerenciar filtros/i)
+    ).toBeInTheDocument();
 
-    expect(screen.getAllByText("React").length).toBeGreaterThan(0);
+    fireEvent.click(
+      screen.getByRole("button", { name: /limpar filtros/i })
+    );
+
+    expect(screen.getAllByText(/react/i).length).toBeGreaterThan(0);
     expect(setSearch).toHaveBeenCalledWith("");
     expect(setKeywordFilter).toHaveBeenCalledWith([]);
   });
