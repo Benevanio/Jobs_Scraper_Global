@@ -7,16 +7,23 @@ vi.mock("@/hooks/useTheme", () => ({
 }));
 
 describe("JobsHeaderCard", () => {
-  it("renderiza logo acessivel e descricao", () => {
+  it("renderiza logo acessível e descrição", () => {
     render(<JobsHeaderCard />);
 
     expect(screen.getByAltText("Painel de Vagas")).toBeInTheDocument();
-    expect(screen.getByText("Leitura automatica dos arquivos XLSX gerados em output.")).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/leitura automática dos arquivos.*xlsx gerados em output/i)
+    ).toBeInTheDocument();
   });
 
-  it("renderiza o botao de alternar tema", () => {
+  it("renderiza o botão de alternar tema", () => {
     render(<JobsHeaderCard />);
 
-    expect(screen.getByRole("button", { name: "Ativar tema escuro" })).toBeInTheDocument();
+    const buttons = screen.getAllByRole("button", {
+      name: /ativar tema escuro/i,
+    });
+
+    expect(buttons).toHaveLength(2);
   });
 });
