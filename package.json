@@ -22,23 +22,33 @@
     "validate": "npm run test --workspace=backend && npm run lint --workspace=frontend && npm run build --workspace=frontend",
     "electron": "electron .",
     "electron:dev": "npm run build:frontend && electron .",
-    "dist": "npm run build:frontend && electron-builder"
+    "dist": "npm run build:frontend && electron-builder",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "axios": "^1.13.6",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
+    "openid-client": "^6.8.2",
     "pdfkit": "^0.18.0",
+    "pg": "^8.20.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
     "concurrently": "^9.2.1",
+    "drizzle-kit": "^0.31.10",
     "electron": "^33.0.0",
-    "electron-builder": "^25.0.0"
+    "electron-builder": "^25.0.0",
+    "typescript": "^6.0.2"
   },
   "build": {
     "appId": "com.benetesla.vagas-full",
