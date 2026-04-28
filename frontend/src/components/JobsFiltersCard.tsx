@@ -82,7 +82,7 @@ export function JobsFiltersCard({
     <>
       <Card className="rounded-[24px] border border-slate-200 bg-white/95 shadow-[0_18px_45px_rgba(15,23,42,0.08)] backdrop-blur dark:border-[#2b3f58] dark:bg-[#131d31]/95 dark:shadow-[0_18px_45px_rgba(3,8,20,0.25)]">
         <CardContent className="flex flex-col gap-4 p-5 md:p-6">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+          <div className="flex flex-col md:flex-row gap-3 md:items-center">
             <div className="relative flex-1">
               <FiSearch className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
               <Input
@@ -96,7 +96,7 @@ export function JobsFiltersCard({
           </div>
 
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-1 flex-wrap items-center gap-2">
+            <div className="flex flex-1 flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
               <select
                 aria-label="Filtrar por palavra-chave"
                 className="h-12 min-w-[220px] rounded-2xl border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#14AE5C]/40 dark:border-[#35506f] dark:bg-[#0b1527] dark:text-slate-100"
@@ -124,15 +124,17 @@ export function JobsFiltersCard({
                 ))}
               </select>
 
-              <Badge variant="secondary" className="gap-1.5 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs text-slate-700 dark:border-[#35506f] dark:bg-[#24324c] dark:text-slate-100">
-                <FiFileText className="h-3.5 w-3.5" />
-                {meta.file || "Sem arquivo"}
-              </Badge>
+             <div> 
+                <Badge variant="secondary" className="gap-1.5 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs text-slate-700 dark:border-[#35506f] dark:bg-[#24324c] dark:text-slate-100">
+                  <FiFileText className="h-3.5 w-3.5" />
+                    {meta.file || "Sem arquivo"}
+                </Badge>
 
-              <Badge className="gap-1.5 rounded-full bg-[#0c6b35] px-3 py-1 text-xs text-white">
-                <FiBriefcase className="h-3.5 w-3.5" />
-                {meta.total} vagas
-              </Badge>
+                <Badge className="gap-1.5 rounded-full bg-[#0c6b35] px-3 py-1 text-xs text-white">
+                  <FiBriefcase className="h-3.5 w-3.5" />
+                    {meta.total} vagas
+                </Badge>
+              </div>
             </div>
 
             <div className="flex items-center gap-2 self-start xl:self-auto">

@@ -7,7 +7,7 @@ import { useJobsFiltering } from "@/hooks/useJobsFiltering";
 import { useJobsPagination } from "@/hooks/useJobsPagination";
 import type { JobsMeta } from "@/types/jobs";
 import { useCallback, type SetStateAction } from "react";
-import { FiRefreshCw } from "react-icons/fi";
+import { FiRefreshCw } from "react-icons/fi"; 
 
 function formatDate(timestamp: JobsMeta["modifiedAt"]): string {
   if (!timestamp) {
@@ -85,8 +85,7 @@ function App() {
               <Button
                 onClick={handleScraper}
                 disabled={scraping}
-                className="h-12 rounded-2xl bg-[#0c6b35] px-5 text-white shadow-sm hover:bg-[#0a5b2d]"
-              >
+                className="h-12 md:h-14 w-full sm:w-auto rounded-xl md:rounded-2xl bg-[#0c6b35] px-6 text-base text-white shadow-sm hover:bg-[#0a5b2d] whitespace-nowrap flex items-center gap-2"              >
                 <FiRefreshCw className={`h-4 w-4 ${scraping ? "animate-spin" : ""}`} />
                 {scraping ? "Buscando vagas..." : "Buscar vagas"}
               </Button>

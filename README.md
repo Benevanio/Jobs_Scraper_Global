@@ -169,7 +169,7 @@ Recomendacoes:
 - `npm run test`: executa testes do backend
 - `npm run build`: build do frontend
 - `npm run validate`: teste backend + lint/build frontend
-- `npm run test:coverage`: coverage frontend + backend
+- `c`: coverage frontend + backend
 
 ### Backend
 
