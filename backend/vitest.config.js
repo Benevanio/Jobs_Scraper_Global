@@ -19,6 +19,15 @@ export default defineConfig(({ mode }) => {
           branches: 80,
           statements: 80,
         },
+        exclude: [
+          "src/swagger.ts",
+          "src/db/schema/**",
+          "src/db/client.ts",
+          "src/db/types/**",
+          "src/modules/types/**",
+          "drizzle.config.js",
+          "index.js",
+        ],
       },
     },
   };

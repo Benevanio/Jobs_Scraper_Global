@@ -1,0 +1,20 @@
+meta {
+  name: Delete SavedJobs
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{base_url}}/saved-jobs/47bd1471-4269-4d93-a7ec-889e451decb7
+  body: json
+  auth: inherit
+}
+
+headers {
+  Cookie: {{sessionCookie}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

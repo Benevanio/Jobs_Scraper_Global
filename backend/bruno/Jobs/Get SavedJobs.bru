@@ -1,0 +1,20 @@
+meta {
+  name: Get SavedJobs
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/saved-jobs/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Cookie: {{sessionCookie}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

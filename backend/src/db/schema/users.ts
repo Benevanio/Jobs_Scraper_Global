@@ -34,6 +34,5 @@ export const users = pgTable(
   }),
 );
 
-// 🔥 TIPOS AUTOMÁTICOS
 export type User = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;

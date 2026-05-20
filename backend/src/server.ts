@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createJobsApiApp } from "./jobsApiApp";
+import { createJobsApiApp } from "./app";
 import { logInfo, logWarn } from "./logger";
 
 const PORT = Number(process.env.PORT ?? 3001);

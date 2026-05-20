@@ -1,12 +1,12 @@
 meta {
-  name: GitHubAuthUrl
+  name: Get Preferences
   type: http
-  seq: 5
+  seq: 4
 }
 
 get {
-  url: {{base_url}}/auth/github/url
-  body: none
+  url: {{base_url}}/users/preferences
+  body: json
   auth: inherit
 }
 

@@ -1,0 +1,35 @@
+meta {
+  name: Post SavedJobs
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/saved-jobs/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Cookie: {{sessionCookie}}
+}
+
+body:json {
+  {
+    "jobLink": "https://www.adzuna.com.br/details/5708430362?utm_medium=api&utm_source=0ecc32d5",
+    "jobTitle": "Growth Product Manager",
+    "company": "Zicasso",
+    "location": "Brasil",
+    "source": "Adzuna",
+    "status": "saved",
+    "notes": "Vaga interessante para avaliar depois"
+  }
+  
+  
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

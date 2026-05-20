@@ -1,0 +1,37 @@
+meta {
+  name: Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email":"hudsonteste@email.com",
+    "password":"teste1234"
+  }
+}
+
+tests {
+  const rawCookie = res.headers["set-cookie"];
+  
+  const cookie = Array.isArray(rawCookie)
+    ? rawCookie[0]
+    : rawCookie;
+  
+  const sessionCookie = cookie.split(";")[0];
+  
+  bru.setEnvVar("sessionCookie", sessionCookie);
+  
+  console.log(sessionCookie);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

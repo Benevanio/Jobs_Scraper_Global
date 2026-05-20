@@ -7,6 +7,7 @@ acentos
 acesso
 achar
 acontece
+adequa
 adicionais
 Adicionamos
 adzuna
@@ -35,8 +36,10 @@ aparece
 apertado
 aplica
 aproveitar
+aquela
 argumento
 asar
+ataques
 atingido
 ativa
 ativas
@@ -62,6 +65,7 @@ Bloqueia
 bostonconsultinggroup
 brex
 Buscando
+cadastrado
 camadas
 cancelamento
 candidatura
@@ -77,6 +81,7 @@ carregamos
 cascadia
 casos
 Centraliza
+centralizado
 Certificados
 cespare
 chainalysis
@@ -91,6 +96,7 @@ chegam
 clientes
 coleta
 colidem
+coloca
 colunas
 combinações
 commitar
@@ -241,9 +247,11 @@ formato
 fornecidas
 funciona
 funcionando
+futura
 futuro
 garantindo
 genérico
+gerados
 goldmark
 goquery
 greehouse
@@ -267,6 +275,7 @@ indisponivel
 indisponível
 inesperado
 inexistente
+inferidos
 informada
 informado
 Inicia
@@ -285,8 +294,10 @@ interrompe
 interrupção
 Intervalo
 Inválida
+invalidação
 invalidar
 isso
+iterações
 jobsglobal
 jobsglobalscraper
 jooble
@@ -309,6 +320,7 @@ linhas
 listagem
 localiza
 Localização
+loga
 logar
 longo
 lote
@@ -327,6 +339,7 @@ melhorar
 MELHORIA
 memoria
 memória
+mensagens
 mescladas
 mesma
 Mesmos
@@ -337,6 +350,7 @@ milissegundos
 mínimo
 minúsculas
 modelo
+modernos
 momentos
 mondelezinternational
 montar
@@ -383,6 +397,7 @@ paralelas
 paralelo
 parseia
 partir
+passadas
 passos
 pegar
 pela
@@ -396,6 +411,7 @@ permitindo
 planetscale
 pôde
 poderia
+poderosa
 ponteiro
 populada
 populado
@@ -409,9 +425,11 @@ precisar
 preciso
 preenche
 Preenchendo
+preenchido
 preenchidos
 Prefere
 Preferências
+prefs
 presencial
 presentes
 Pricebook
@@ -503,6 +521,7 @@ talvez
 temos
 tenta
 tentativa
+terá
 teste
 textuais
 themuse
@@ -519,6 +538,7 @@ trocas
 TUDO
 typeform
 Uguwk
+única
 unicas
 únicas
 único

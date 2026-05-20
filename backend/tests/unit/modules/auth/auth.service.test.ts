@@ -1,0 +1,151 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  getAuthUrl: vi.fn(),
+  exchangeCode: vi.fn(),
+  findOrCreateUser: vi.fn(),
+}));
+
+vi.mock("../../../../src/modules/auth/providers/auth.provider", () => ({
+  providers: {
+    github: {
+      getAuthUrl: mocks.getAuthUrl,
+      exchangeCode: mocks.exchangeCode,
+    },
+    google: {
+      getAuthUrl: mocks.getAuthUrl,
+      exchangeCode: mocks.exchangeCode,
+    },
+  },
+}));
+
+vi.mock("../../../../src/modules/users/functions/findOrCreateUser", () => ({
+  findOrCreateUser: mocks.findOrCreateUser,
+}));
+
+import { AuthService } from "../../../../src/modules/auth/auth.service";
+
+const validCallbackParams = {
+  provider: "github" as const,
+  code: "abc123",
+  state: "xyz",
+  callbackUrl:
+    "http://localhost:3001/api/auth/github/callback?code=abc123&state=xyz",
+};
+
+const mockProfile = {
+  id: "github-123",
+  email: "user@example.com",
+  name: "Hudson Tavares",
+};
+
+const mockUser = {
+  id: "uuid-123",
+  username: "hudson",
+  email: "user@example.com",
+};
+
+describe("AuthService", () => {
+  let service: AuthService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    service = new AuthService();
+  });
+
+  describe("getAuthUrl", () => {
+    it("returns auth url from provider", async () => {
+      mocks.getAuthUrl.mockResolvedValueOnce("https://github.com/oauth");
+
+      const result = await service.getAuthUrl("github", "state123");
+
+      expect(result).toBe("https://github.com/oauth");
+      expect(mocks.getAuthUrl).toHaveBeenCalledWith("state123");
+    });
+
+    it("throws when provider is invalid", async () => {
+      await expect(
+        service.getAuthUrl("invalid" as any, "state"),
+      ).rejects.toThrow("Provider inválido");
+    });
+  });
+
+  describe("getProfileFromProvider", () => {
+    it("returns profile from provider", async () => {
+      mocks.exchangeCode.mockResolvedValueOnce(mockProfile);
+
+      const result = await service.getProfileFromProvider(validCallbackParams);
+
+      expect(result).toEqual(mockProfile);
+      expect(mocks.exchangeCode).toHaveBeenCalledWith({
+        code: "abc123",
+        state: "xyz",
+        callbackUrl: validCallbackParams.callbackUrl,
+      });
+    });
+
+    it("throws when provider is invalid", async () => {
+      await expect(
+        service.getProfileFromProvider({
+          ...validCallbackParams,
+          provider: "invalid" as any,
+        }),
+      ).rejects.toThrow("Provider inválido");
+    });
+  });
+
+  describe("createSession", () => {
+    it("returns session with userId and accessToken", async () => {
+      const session = await service.createSession({ id: "uuid-123" });
+
+      expect(session).toEqual({
+        accessToken: "jwt-aqui",
+        userId: "uuid-123",
+      });
+    });
+  });
+
+  describe("handleCallback", () => {
+    it("returns user and session on success", async () => {
+      mocks.exchangeCode.mockResolvedValueOnce(mockProfile);
+      mocks.findOrCreateUser.mockResolvedValueOnce(mockUser);
+
+      const result = await service.handleCallback(validCallbackParams);
+
+      expect(result.user).toEqual(mockUser);
+      expect(result.session).toEqual({
+        accessToken: "jwt-aqui",
+        userId: "uuid-123",
+      });
+    });
+
+    it("throws when exchangeCode fails", async () => {
+      mocks.exchangeCode.mockRejectedValueOnce(new Error("invalid code"));
+
+      await expect(service.handleCallback(validCallbackParams)).rejects.toThrow(
+        "invalid code",
+      );
+    });
+
+    it("throws when findOrCreateUser fails", async () => {
+      mocks.exchangeCode.mockResolvedValueOnce(mockProfile);
+      mocks.findOrCreateUser.mockRejectedValueOnce(new Error("db error"));
+
+      await expect(service.handleCallback(validCallbackParams)).rejects.toThrow(
+        "db error",
+      );
+    });
+
+    it("calls findOrCreateUser with provider and profile", async () => {
+      mocks.exchangeCode.mockResolvedValueOnce(mockProfile);
+      mocks.findOrCreateUser.mockResolvedValueOnce(mockUser);
+
+      await service.handleCallback(validCallbackParams);
+
+      expect(mocks.findOrCreateUser).toHaveBeenCalledWith({
+        provider: "github",
+        profile: mockProfile,
+      });
+    });
+  });
+});

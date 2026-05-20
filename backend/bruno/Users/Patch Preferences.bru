@@ -1,0 +1,31 @@
+meta {
+  name: Patch Preferences
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{base_url}}/users/preferences
+  body: json
+  auth: inherit
+}
+
+headers {
+  Cookie: {{sessionCookie}}
+}
+
+body:json {
+  {
+    "keywords": ["typescript", "node.js", "backend"],
+    "searchLocation": "São Paulo, Brasil",
+    "searchLanguage": "pt",
+    "remoteOnly": true,
+    "jobTypes": ["full-time", "contract"],
+    "emailNotifications": false
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "Backend para scraping e API de vagas do LinkedIn",
   "main": "index.ts",
-  "type": "module",
   "scripts": {
     "start": "tsx src/server.ts",
-    "dev": "tsx src/server.ts",
+    "dev": "NODE_ENV=development tsx src/server.ts",
     "scraper": "tsx index.ts",
     "scraper:watch": "nodemon index.ts",
     "api": "tsx src/server.ts",
@@ -35,6 +34,7 @@
   "author": "Bene Tesla Dev",
   "license": "ISC",
   "dependencies": {
+    "argon2": "^0.44.0",
     "axios": "^1.13.6",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
@@ -54,6 +54,7 @@
   "devDependencies": {
     "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.0",
     "@vitest/coverage-v8": "^3.2.4",
     "nodemon": "^3.1.14",
     "supertest": "^7.1.4",

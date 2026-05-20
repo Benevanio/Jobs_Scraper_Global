@@ -40,9 +40,6 @@ export class AuthController {
 
       const state = randomBytes(16).toString("hex");
 
-      console.log("provider:", provider);
-      console.log("generated oauth state:", state);
-
       session.oauth_state = state;
 
       await session.save();
@@ -65,16 +62,10 @@ export class AuthController {
   }
 
   async callback(req: Request, res: Response) {
-    console.log("=== CALLBACK DEBUG ===");
-    console.log("headers cookie:", req.headers.cookie);
-    console.log("query:", req.query);
-
     const session = await getIronSession<SessionData>(req, res, sessionOptions);
-    console.log("session oauth_state:", session.oauth_state);
 
     try {
       const callbackUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
-      console.log("callbackUrl:", callbackUrl);
 
       const params = AuthCallbackParamsSchema.parse({
         provider: req.params.provider,
@@ -82,19 +73,14 @@ export class AuthController {
         state: req.query.state,
         callbackUrl,
       });
-      console.log("received state:", params.state);
 
       if (!session.oauth_state) {
-        console.log("OAuth state ausente na sessão");
         return res.status(400).json({
           error: "OAuth state ausente",
         });
       }
 
       if (session.oauth_state !== params.state) {
-        console.log("OAuth state inválido");
-        console.log("session:", session.oauth_state);
-        console.log("received:", params.state);
         return res.status(400).json({
           error: "OAuth state inválido",
         });
@@ -102,13 +88,11 @@ export class AuthController {
 
       delete session.oauth_state;
       await session.save();
-      console.log("OAuth state validado com sucesso");
 
       const result = await this.authService.handleCallback({
         ...params,
         callbackUrl,
       });
-      console.log("OAuth callback concluído com sucesso");
 
       return res.json(result);
     } catch (error) {

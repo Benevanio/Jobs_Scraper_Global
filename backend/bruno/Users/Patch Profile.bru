@@ -1,0 +1,20 @@
+meta {
+  name: Patch Profile
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{base_url}}/users/profile
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

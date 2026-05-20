@@ -39,6 +39,5 @@ export const accounts = pgTable(
   }),
 );
 
-// 🔥 TIPOS
 export type Account = InferSelectModel<typeof accounts>;
 export type NewAccount = InferInsertModel<typeof accounts>;

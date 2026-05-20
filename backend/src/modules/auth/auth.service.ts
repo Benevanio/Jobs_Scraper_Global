@@ -69,7 +69,6 @@ export class AuthService {
 
   async createSession(user: { id: string }): Promise<Session> {
     return {
-      accessToken: "jwt-aqui",
       userId: user.id,
     };
   }

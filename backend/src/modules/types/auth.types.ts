@@ -39,7 +39,6 @@ export type ExchangeCodeParams = z.infer<typeof ExchangeCodeParamsSchema>;
 
 // --- Session ---
 export const SessionSchema = z.object({
-  accessToken: z.string(),
   userId: z.string().uuid("ID de usuário inválido"),
 });
 export type Session = z.infer<typeof SessionSchema>;

@@ -1,0 +1,26 @@
+meta {
+  name: Patch SavedJobs
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{base_url}}/saved-jobs/e3571d73-84ba-477b-808e-cc2f79fcdc0b
+  body: json
+  auth: inherit
+}
+
+headers {
+  Cookie: {{sessionCookie}}
+}
+
+body:json {
+  {
+    "notes": "Uma vaga que vale a pena ser estudada com carinho"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
