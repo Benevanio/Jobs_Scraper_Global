@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+set -eu
+
+npm exec -- commitlint --edit "$1"

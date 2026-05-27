@@ -1,283 +1,312 @@
 # Painel de Vagas
 
-Uma plataforma interna para transformar arquivos XLSX de vagas em uma experiencia visual rapida, filtravel e pronta para decisao.
+[![CI](https://github.com/Benevanio/Jobs_Scraper_Global/actions/workflows/ci.yml/badge.svg)](https://github.com/Benevanio/Jobs_Scraper_Global/actions/workflows/ci.yml)
+![Node >= 22](https://img.shields.io/badge/node-%3E%3D22-339933)
+![Monorepo](https://img.shields.io/badge/architecture-monorepo-0A66C2)
+![License ISC](https://img.shields.io/badge/license-ISC-lightgrey)
 
+Plataforma de captura, agregação e consulta de vagas com arquitetura monorepo, composta por frontend web, backend Node.js e aplicação desktop com Electron.
 
----
+O produto evoluiu para um modelo orientado a serviços (API + scraper Go + cache/índices), com autenticação, preferências de usuário e integração com banco de dados.
 
-## ⚠️ IMPORTANTE: Fluxo de Development, Card e Branching
+## Links oficiais
 
-> **Padrão de Desenvolvimento - LEIA ATENTAMENTE**
->
-> Toda nova implementação deve nascer primeiro de um **card/issue** e, somente depois, de uma **branch criada a partir da `master`**.
->
-> **Board oficial para abertura e acompanhamento dos cards:**
-> https://github.com/users/Benevanio/projects/6
->
-> O fluxo correto de trabalho deve seguir EXATAMENTE essa sequência:
->
-> 1. **Abrir um Card/Issue de melhoria no board oficial** - https://github.com/users/Benevanio/projects/6
-> 2. **Criar a branch a partir da `master` usando o mesmo nome do card** - mantenha o número e a descrição no nome da `feature/`
-> 3. **Desenvolver e testar localmente** - faça commits regulares na feature
-> 4. **Abrir Pull Request** - a PR da feature deve apontar para `develop` (NÃO para `master`)
-> 5. **Code Review e Merge em `develop`** - após aprovação, merge e validação
-> 6. **Abrir PR de `develop` para `master`** - somente features testadas e aprovadas
-> 7. **Merge em `master`** - release final da feature
->
-> **Exemplo prático:**
->
-> - Card no board: `#52 - Criar card de resumo no dashboard`
-> - Branch criada a partir da `master` com o mesmo nome do card: `feature/52-card-resumo-dashboard`
->
-> ```bash
-> git checkout master
-> git pull origin master
-> git checkout -b feature/52-card-resumo-dashboard
-> ```
->
-> **Resumo das branches:**
-> - `master`: Produção (releases finais e estáveis)
-> - `develop`: Staging (features em validação)
-> - `feature/*`: Branches de desenvolvimento vinculadas a um card/issue e sempre criadas a partir de `master`
->
-> ⛔ **NÃO faça:**
-> - Commits diretos em `master` ou `develop`
-> - Criar feature sem card/issue associado
-> - Criar branch de feature a partir de outra feature
-> - Abrir Pull Request diretamente para `master` na primeira etapa
+- Gestão de produto (Linear): https://linear.app/tatame/team/PAV/all
+- Design system oficial (Figma): https://www.figma.com/design/gollJBtK8PGkffNN4zk9t9/Painel-Dev---releitura?node-id=0-1&p=f&t=zU8zrFzPsNPxZ3qU-0
+- Documentação backend detalhada: [BACKEND.md](BACKEND.md)
+- Documentação scraper Go: [SCRAPER.md](SCRAPER.md)
+- Guia de testes: [TESTING.md](TESTING.md)
 
----
+## Sumário
 
-## Diretriz de Design (Obrigatoria)
+- [Visão geral](#visão-geral)
+- [Arquitetura do monorepo](#arquitetura-do-monorepo)
+- [Stack real do projeto](#stack-real-do-projeto)
+- [Quickstart local](#quickstart-local)
+- [Comandos verificados](#comandos-verificados)
+- [API backend (estado atual)](#api-backend-estado-atual)
+- [Docker (infra + aplicação)](#docker-infra--aplicação)
+- [Desktop com Electron](#desktop-com-electron)
+- [Variáveis de ambiente](#variáveis-de-ambiente)
+- [Testes e qualidade](#testes-e-qualidade)
+- [Fluxo de desenvolvimento e branching](#fluxo-de-desenvolvimento-e-branching)
+- [Git Hooks e qualidade local](#git-hooks-e-qualidade-local)
+- [Inconsistências atuais mapeadas](#inconsistências-atuais-mapeadas)
+- [Roadmap técnico sugerido](#roadmap-técnico-sugerido)
+- [Contribuição](#contribuição)
 
-> **ATENCAO MAXIMA:** o padrao visual oficial da aplicacao deve seguir este Figma:
-> https://www.figma.com/design/gollJBtK8PGkffNN4zk9t9/Painel-Dev---releitura?node-id=0-1&p=f&t=zU8zrFzPsNPxZ3qU-0
+## Visão geral
 
-Todas as novas telas, componentes, ajustes de layout, espacamento, tipografia, cores e estados de interacao devem manter o mesmo designer/padrao visual.
+Este repositório centraliza três frentes:
 
-Nao sera considerado concluido nenhum ajuste de UI/UX que fuja do padrao definido nesse design.
+- Frontend React para visualização e operação da plataforma.
+- Backend Node.js/Express (TypeScript) com autenticação, preferências e rotas de domínio.
+- Scraper em Go para coleta de vagas em múltiplas fontes.
 
+Objetivo de produto: fornecer uma base robusta para busca, filtragem e gestão de vagas com foco em qualidade de dados, escalabilidade e operação contínua.
 
-O projeto esta organizado em monorepo e conecta duas frentes:
-
-- frontend: dashboard em React + Vite + Tailwind
-- backend: scraper + API em Express para leitura e exposicao dos dados
-
-## O que ja entregamos
-
-- Dashboard com visual profissional em tema claro e escuro
-- Leitura automatica dos arquivos XLSX gerados no fluxo de scraping
-- Busca global por titulo, empresa, local e link
-- Filtros por palavra-chave
-- Selecao de arquivo de origem para alternar datasets
-- Tabela paginada com controle de itens por pagina
-- Endpoint de saude e endpoints de listagem/consulta de vagas
-- Suite de testes (unitarios + integracao) em frontend e backend
-- Cobertura de testes com alvo minimo de 80%
-
-## Demo
-
-
-
-
-<img width="1888" height="718" alt="image" src="https://github.com/user-attachments/assets/37ee169f-9d9a-43f4-888f-bcae710c7808" />
-<img width="1900" height="733" alt="image" src="https://github.com/user-attachments/assets/7d09c1c6-67e6-48bf-9720-4d178b20af21" />
-
-<img width="1833" height="497" alt="image" src="https://github.com/user-attachments/assets/f6088114-61fa-40b2-a505-f2da36d037fe" />
-
-<img width="1818" height="707" alt="image" src="https://github.com/user-attachments/assets/483950a2-9e0b-4445-83f2-91a985c7a710" />
-
-
-## Arquitetura do produto
+## Arquitetura do monorepo
 
 ```text
 .
-├─ frontend/
-├─ backend/
-├─ docker-compose.yml
-└─ package.json
+├─ frontend/                # Dashboard web (React + Vite)
+├─ backend/                 # API Node.js (Express + TS + Drizzle)
+├─ scraper-go/              # Serviço Go de scraping multi-fonte
+├─ electron/                # Shell desktop
+├─ docker-compose.yml       # App stack (frontend + backend + scraper-go)
+├─ docker-compose.infra.yml # Infra stack (Postgres + Valkey)
+└─ .github/workflows/ci.yml # CI
 ```
 
-## Stack
+## Stack real do projeto
 
-- Frontend: React 19, TypeScript, Vite 8, Tailwind CSS
-- Backend: Node.js 22+, Express 5, XLSX, Axios, Cheerio
-- Qualidade: Vitest, Testing Library, coverage v8
-- Orquestracao local: npm workspaces + Docker Compose
+- Frontend: React 19, TypeScript, Vite 8, Tailwind CSS, Vitest.
+- Backend: Node.js 22+, Express 5, TypeScript, Drizzle ORM, Zod, Iron Session, Redis/Valkey.
+- Scraping: Go (serviço dedicado em scraper-go).
+- Desktop: Electron + Electron Builder.
+- Qualidade: Vitest (frontend/backend), cobertura v8, ESLint (frontend), GitHub Actions CI.
+- Dados: Postgres (persistência) + Valkey/Redis (cache e índice).
 
-## Requisitos
+## Quickstart local
 
-- Node.js 22+
+### Pré-requisitos
+
+- Node.js >= 22
 - npm
-- Docker (opcional)
+- Docker e Docker Compose (opcional, recomendado para ambiente completo)
 
-## Comecando rapido
-
-Instale tudo na raiz do monorepo:
+### Instalação
 
 ```bash
 npm install
 ```
 
-Como usamos workspaces, esse comando instala as dependencias da raiz e tambem de `frontend` e `backend`.
-
-Suba a plataforma completa em desenvolvimento:
+### Execução web (frontend + backend)
 
 ```bash
 npm run dev
 ```
 
-Subida separada por servico:
+Execução separada:
 
 ```bash
 npm run dev:frontend
 npm run dev:backend
 ```
 
-## Configuracao segura na VPS (Redis / Postgres)
+### Execução de testes
 
-Para ambiente de VPS e projeto open source, **nao coloque `DATABASE_URL` nem `REDIS_URL` em `environment.json`**.
-Use somente `backend/.env` no servidor (arquivo ignorado pelo Git) e mantenha `KEYWORDS_STORAGE_MODE=env`.
-
-Exemplo seguro:
-
-```env
-KEYWORDS_STORAGE_MODE=env
-SEARCH_KEYWORDS=Java,Spring,RabbitMQ,Docker
-DATABASE_URL=postgresql://app_user:senha_forte@127.0.0.1:5432/jobsglobalscraper
-REDIS_URL=redis://:senha_forte@127.0.0.1:6379/0
-REDIS_KEY_PREFIX=vagas-full
-CACHE_TTL_MS=600000
+```bash
+npm run test:coverage
 ```
 
-Recomendacoes:
+## Comandos verificados
 
-- use `127.0.0.1` ou a rede interna do Docker na VPS, em vez de expor Redis publicamente
-- prefira `rediss://` se o Redis estiver fora da maquina local/VPS
-- mantenha a porta `6379` fechada para acesso externo no firewall
-- com `KEYWORDS_STORAGE_MODE=env`, o backend deixa de depender de `backend/src/db/environment.json` em producao
-
-## Scripts principais
+Os comandos abaixo existem hoje no repositório e foram conferidos nos package.json de raiz, frontend e backend.
 
 ### Raiz
 
-- `npm run dev`: frontend + backend juntos
-- `npm run dev:frontend`: sobe apenas frontend
-- `npm run dev:backend`: sobe apenas backend
-- `npm run scraper`: executa scraping no backend
-- `npm run scraper:watch`: scraping com hot reload
-- `npm run test`: executa testes do backend
-- `npm run build`: build do frontend
-- `npm run validate`: teste backend + lint/build frontend
-- `c`: coverage frontend + backend
+- npm run dev
+- npm run dev:frontend
+- npm run dev:backend
+- npm run scraper
+- npm run scraper:watch
+- npm run test
+- npm run test:coverage
+- npm run build
+- npm run build:frontend
+- npm run validate
+- npm run electron
+- npm run electron:dev
+- npm run dist
+- npm run db:generate
+- npm run db:migrate
+- npm run db:push
 
 ### Backend
 
-- `npm run start`: sobe API (`src/server.js`)
-- `npm run dev`: sobe API (`src/server.js`)
-- `npm run scraper`: executa scraping (`index.js`)
-- `npm run scraper:watch`: scraping com nodemon
-- `npm run api`: alias para subir API
-- `npm run test`: testes com Vitest
-- `npm run test:coverage`: cobertura com Vitest
-- `npm run test:watch`: testes em modo watch
-- `npm run validate`: valida backend
+- npm run start
+- npm run dev
+- npm run api
+- npm run test
+- npm run test:coverage
+- npm run test:watch
+- npm run validate
+- npm run db:generate
+- npm run db:migrate
+- npm run db:push
 
 ### Frontend
 
-- `npm run dev`: Vite dev server
-- `npm run build`: build de producao
-- `npm run lint`: lint com ESLint
-- `npm run preview`: preview do build
-- `npm run test`: testes com Vitest
-- `npm run test:coverage`: coverage com Vitest
+- npm run dev
+- npm run build
+- npm run lint
+- npm run preview
+- npm run test
+- npm run test:coverage
+- npm run test:watch
 
-## Aplicativo Desktop (Electron)
+## API backend (estado atual)
 
-> **Para testadores:** o executavel `.exe` e o unico arquivo necessario para usar o app. Nao e preciso instalar Node.js, Docker ou qualquer dependencia adicional — somente ter o **Google Chrome** ou **Microsoft Edge** instalado na maquina.
+Base: /api
 
-O projeto pode ser executado como app desktop Windows, sem precisar subir Docker no computador do usuario final.
+Sistema:
 
-### Como o app funciona
+- GET /api/health
 
-- O Electron inicia o backend internamente na porta `3001`
-- A UI React e carregada dentro da janela desktop
-- O botao **Buscar vagas** dispara o scraper via API (`POST /api/scraper/run`)
-- Os arquivos de saida (XLSX/PDF) sao salvos no diretorio de dados do usuario
+Autenticação:
 
-### Para testadores — usando o instalador
+- GET /api/auth/:provider/url
+- GET /api/auth/:provider/callback
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/logout
+- GET /api/auth/me
 
-1. Baixe o arquivo `Vagas Full Setup X.X.X.exe` disponibilizado pelo time
-2. Execute o instalador e siga os passos (Next → Install → Finish)
-3. Abra o atalho **Vagas Full** criado na area de trabalho
-4. Clique em **Buscar vagas** para disparar o scraper
-5. Aguarde a conclusao — os resultados sao exibidos automaticamente na tabela
+Usuários:
 
-> **Requisito:** Chrome ou Edge instalado. O scraper utiliza o browser do sistema via `puppeteer-core`.
+- GET /api/users/profile
+- PATCH /api/users/profile
+- GET /api/users/preferences
+- POST /api/users/preferences
+- PATCH /api/users/preferences
 
-### Estrutura principal
+Jobs:
 
-```text
-electron/
-├─ main.js
-├─ preload.js
-└─ loading.html
-```
+- GET /api/jobs/search
 
-### Rodar em modo desktop (desenvolvimento)
+Keywords:
 
-1. Instale dependencias na raiz:
+- GET /api/keywords
+- POST /api/keywords
+
+Saved jobs:
+
+- GET /api/saved-jobs
+- GET /api/saved-jobs/:id
+- POST /api/saved-jobs
+- PATCH /api/saved-jobs/:id
+- DELETE /api/saved-jobs/:id
+
+Swagger:
+
+- GET /docs
+
+## Docker (infra + aplicação)
+
+Este projeto separa infraestrutura de aplicação em dois arquivos compose.
+
+1. Criar rede compartilhada (necessário uma vez):
 
 ```bash
-npm install
+docker network create vagas-net
 ```
 
-2. Gere o build do frontend:
+2. Subir infra (Postgres + Valkey):
+
+```bash
+docker compose -f docker-compose.infra.yml up -d
+```
+
+3. Subir aplicação (scraper-go + backend + frontend):
+
+```bash
+docker compose up --build -d
+```
+
+4. Logs:
+
+```bash
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f scraper-go
+```
+
+5. Encerrar:
+
+```bash
+docker compose down
+docker compose -f docker-compose.infra.yml down
+```
+
+Serviços padrão:
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3001
+- Scraper Go: http://localhost:8081
+
+## Desktop com Electron
+
+O app desktop empacota frontend + backend e inicia a aplicação com Electron.
+
+Comandos:
 
 ```bash
 npm run build:frontend
-```
-
-3. Inicie o app Electron:
-
-```bash
 npm run electron
 ```
 
-Opcional (atalho para build + electron):
-
-```bash
-npm run electron:dev
-```
-
-### Gerar instalador .exe para distribuir
-
-Execute na raiz do monorepo:
+Distribuição (Windows):
 
 ```bash
 npm run dist
 ```
 
-O instalador sera gerado em `dist-electron/Vagas Full Setup X.X.X.exe`.
+Saída esperada do instalador:
 
-### Observacao para Windows (build local)
+- dist-electron/Vagas Full Setup X.X.X.exe
 
-Se o `electron-builder` falhar com erro de symlink (winCodeSign), habilite o **Modo de Desenvolvedor** no Windows ou rode o terminal como Administrador antes de executar `npm run dist`.
+## Variáveis de ambiente
 
-## Testes e cobertura
+Arquivo base:
 
-Estrutura de testes:
+- backend/.env.example
 
-- backend: `backend/tests/unit` e `backend/tests/integration`
-- frontend: `frontend/tests/unit` e `frontend/tests/integration`
+Arquivo local:
 
-Meta minima de cobertura:
+- backend/.env
+
+Variáveis centrais de operação:
+
+- DATABASE_URL
+- VALKEY_URL
+- GO_SCRAPER_URL
+- SESSION_SECRET
+- CORS_ALLOWED_ORIGINS
+- SEARCH_LOCATION
+- SEARCH_GEO_ID
+- SEARCH_LANGUAGE
+- REMOTE_ONLY
+- JOB_TYPES
+- TIME_FILTER
+- WAIT_BETWEEN_SEARCHES_MS
+- PAGE_TIMEOUT_MS
+- MAX_PAGES_PER_KEYWORD
+- CACHE_TTL_MS
+
+Segurança operacional:
+
+- Nunca versionar segredos reais no Git.
+- Preferir acesso interno para banco/cache em VPS.
+- Em ambiente externo, usar TLS para conexões de dados sempre que possível.
+
+## Testes e qualidade
+
+Estrutura:
+
+- backend/tests/unit
+- backend/tests/integration
+- frontend/tests/unit
+- frontend/tests/integration
+
+Threshold mínimo:
 
 - lines >= 80%
 - statements >= 80%
 - functions >= 80%
 - branches >= 80%
-Comandos de cobertura:
+
+Comandos:
 
 ```bash
 npm run test:coverage
@@ -285,63 +314,108 @@ npm --workspace frontend run test:coverage
 npm --workspace backend run test:coverage
 ```
 
-Guia de boas praticas: [TESTING.md](TESTING.md)
+Observação importante: o backend já está configurado para coletar cobertura apenas em src/**/*.ts, evitando contagem de artefatos gerados.
 
-## Variaveis de ambiente
+## CI/CD
 
-Arquivos:
+Workflow atual: .github/workflows/ci.yml
 
-- `backend/.env.example` (base)
-- `backend/.env` (local)
+Executa em push para master/develop e em pull_request:
 
-## Docker
+- Instalação de dependências
+- Coverage frontend
+- Coverage backend
+- Lint frontend
+- Build frontend
 
-Subir frontend + backend:
+## Fluxo de desenvolvimento e branching
+
+Padrão oficial:
+
+1. Abrir card no Linear: https://linear.app/tatame/team/PAV/all
+2. Criar branch de feature a partir de master
+3. Desenvolver e testar localmente
+4. Abrir PR da feature para develop
+5. Após aprovação e validação, merge em develop
+6. Abrir PR de develop para master
+7. Merge em master para release
+
+Convenção recomendada de branch:
+
+- feature/<id-do-card>-<descricao-curta>
+
+## Git Hooks e qualidade local
+
+O repositório usa Husky na raiz do monorepo para padronizar validações locais em qualquer branch.
+
+Hooks configurados:
+
+- pre-commit: executa lint-staged para validar arquivos staged do frontend.
+- commit-msg: valida mensagem de commit com commitlint (Conventional Commits).
+- pre-push: executa validação do monorepo (test backend + lint/build frontend).
+
+Bootstrap recomendado para novos ambientes:
 
 ```bash
-docker compose up --build
+npm run setup:dev
 ```
 
+Checklist quando hooks não disparam:
+
+1. Validar se o diretório Git foi detectado: git rev-parse --git-dir.
+2. Validar hooksPath local: git config --get core.hooksPath.
+3. Confirmar arquivos versionados em .husky (pre-commit, commit-msg, pre-push).
+4. Reinstalar hooks: npm run prepare.
+5. Em Windows, preferir Git Bash para depuração de scripts shell.
+
+Observação importante:
+
+- CI continua obrigatório e independente de hooks locais. Mesmo com bypass local, o pipeline valida cobertura/lint/build antes de merge.
+
+
+
+## Roadmap técnico sugerido
+
+### DX e onboarding
+
+- Adicionar script único de bootstrap (exemplo: npm run setup:dev) para criar .env e validar pré-requisitos.
+- Adicionar verificação automática de scripts quebrados no CI.
+- Padronizar comandos cross-platform (evitar dependência de sintaxe de variável de ambiente Unix em scripts críticos).
+
+
+### Segurança
+
+- Aplicar política de rotação de SESSION_SECRET e credenciais OAuth.
+- Adicionar checklist de segurança para PRs (cookies, CORS, secrets, headers).
+
+### Performance
+
+- Definir estratégia de paginação e filtros em camada de API com métricas por endpoint.
+- Revisar TTL e cardinalidade dos índices no Valkey para reduzir consumo de memória.
+
+### Observabilidade
+
+- Padronizar correlação de logs por request id.
+- Publicar guia mínimo de troubleshooting com sinais de saúde dos serviços frontend/backend/scraper-go.
+
+## Contribuição
+
+1. Abra um card no Linear.
+2. Crie branch a partir de master.
+3. Implemente com testes.
+4. Execute validações locais:
 
 ```bash
-docker compose up --build -d
+npm run validate
+npm run test:coverage
 ```
 
-Parar e remover containers/rede:
+5. Abra PR para develop com contexto técnico objetivo.
 
-```bash
-docker compose down
-```
+---
 
-Rebuild apenas backend:
+Se você vai trabalhar em backend, scraper ou testes, use também:
 
-```bash
-docker compose build backend
-```
-
-Rodar scraping pontual via container:
-
-```bash
-docker compose run --rm backend node index.js
-```
-
-Logs:
-
-```bash
-docker compose logs -f
-docker compose logs -f backend
-```
-
-Servicos em desenvolvimento:
-
-- frontend: http://localhost:5173
-- backend: http://localhost:3001
-
-A API le planilhas localizadas em `backend/output/`.
-
-## Endpoints da API
-
-- `GET /api/health`
-- `GET /api/jobs/files`
-- `GET /api/jobs`
-- `GET /api/jobs?file=nome.xlsx`
+- [BACKEND.md](BACKEND.md)
+- [SCRAPER.md](SCRAPER.md)
+- [TESTING.md](TESTING.md)

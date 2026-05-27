@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 set -eu
 
-npm exec -- lint-staged
+npm run validate
