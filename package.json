@@ -1,8 +1,8 @@
 {
   "name": "vagas-full-monorepo",
   "version": "1.0.0",
-  "description": "Aplicativo desktop para buscar e visualizar vagas com Electron, React e Node.js.",
-  "author": "Bene Tesla Dev",
+  "description": "Monorepo para o projeto <Cand!date!>",
+  "author": "Projeto Open Source Bene Tesla Dev",
   "private": true,
   "main": "electron/main.js",
   "workspaces": [
@@ -30,6 +30,7 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@vitest/coverage-v8": "4.1.8",
     "axios": "^1.17.0",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
@@ -58,9 +59,9 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "concurrently": "^9.2.1",
-    "drizzle-kit": "^0.31.10",
+    "drizzle-kit": "^0.18.1",
     "electron": "^42.3.3",
-    "electron-builder": "^25.1.8",
+    "electron-builder": "^26.15.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
     "typescript": "^5.9.3"
@@ -104,7 +105,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Vagas Full"
+      "shortcutName": "<Cand!date!>"
     }
   }
 }
