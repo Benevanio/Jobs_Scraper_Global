@@ -16,6 +16,7 @@ O produto evoluiu para um modelo orientado a serviços (API + scraper Go + cache
 - Documentação backend detalhada: [BACKEND.md](BACKEND.md)
 - Documentação scraper Go: [SCRAPER.md](SCRAPER.md)
 - Guia de testes: [TESTING.md](TESTING.md)
+- Documentação inicial do MVP (Visão PO) [ESCOPO.md](ESCOPO.md)
 
 ## Sumário
 
