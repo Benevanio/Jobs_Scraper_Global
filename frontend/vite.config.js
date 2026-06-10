@@ -5,7 +5,7 @@ import { defineConfig } from 'vite'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const isDev = process.env.NODE_ENV === 'development'
+const isDev = import.meta.env.DEV
 
 export default defineConfig({
   plugins: [react()],
@@ -14,14 +14,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: isDev ? {
+  server: {
     port: 5173,
     proxy: {
       '/api': {
         target: 'https://jobsglobalscraper.ddns.net',
         changeOrigin: true,
         secure: false,
-      }
-    }
-  } : undefined,
+      },
+    },
+  },
 })
