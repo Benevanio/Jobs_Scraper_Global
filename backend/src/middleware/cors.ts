@@ -1,10 +1,14 @@
 import cors from "cors";
 
+// Regex cobre qualquer preview do Vercel: painel-vagas-*.vercel.app
+// (hash-based e branch-based, ex: git-master-bene-teslas-projects)
+const VERCEL_PREVIEW_RE = /^https:\/\/painel-vagas-[a-z0-9-]+\.vercel\.app$/;
+
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://painel-vagas-lake.vercel.app",
+  "https://painel-vagas-git-master-bene-teslas-projects.vercel.app",
   "https://painel-vagas-m6hbzlqeh-bene-teslas-projects.vercel.app",
   "https://jobsglobalscraper.ddns.net",
-  "http://jobsglobalscraper.ddns.net",
   "http://localhost:5173",
   "http://localhost:5174",
 ];
@@ -19,14 +23,17 @@ function parseAllowedOrigins(value: string | undefined): Set<string> {
 
 export const corsOptions: cors.CorsOptions = {
   origin(origin, callback) {
-    const allowedOrigins = parseAllowedOrigins(
-      process.env.CORS_ALLOWED_ORIGINS,
-    );
-    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    if (!origin) return callback(null, true);
+
+    if (VERCEL_PREVIEW_RE.test(origin)) return callback(null, true);
+
+    const allowedOrigins = parseAllowedOrigins(process.env.CORS_ALLOWED_ORIGINS);
+    if (allowedOrigins.has(origin)) return callback(null, true);
+
     callback(new Error("Origin not allowed by CORS"));
   },
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
   maxAge: 86400,
 };

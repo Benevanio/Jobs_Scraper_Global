@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://jobsglobalscraper.ddns.net/api/$1"
+      "destination": "https://jobsglobalscraper.ddns.net/api/$1"
     },
     {
       "source": "/((?!api/).*)",
