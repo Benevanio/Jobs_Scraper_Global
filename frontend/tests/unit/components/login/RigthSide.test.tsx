@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -7,9 +8,6 @@ const mockLogin = vi.fn();
 vi.mock("@/services/authService", () => ({
   login: (...args: any[]) => mockLogin(...args),
 }));
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import "@testing-library/jest-dom/vitest";
 
 vi.mock("@unpic/react", () => ({
   Image: (props: any) => <img {...props} alt={props.alt} />,
@@ -24,19 +22,6 @@ vi.mock("framer-motion", () => ({
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
-}));
-
-const mockLogin = vi.fn();
-vi.mock("@/context/AuthContext", () => ({
-  useAuth: () => ({
-    login: mockLogin,
-  }),
-}));
-
-vi.mock("@/services/api", () => ({
-  api: {
-    get: vi.fn(),
-  },
 }));
 
 import RigthSide from "@/components/login/RigthSide";
@@ -62,19 +47,15 @@ describe("RigthSide", () => {
 
   it("renderiza formulário corretamente", () => {
     render(<RigthSide />);
-    
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/senha/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /entrar/i })).toBeInTheDocument();
     expect(screen.getByText(/cadastre-se/i)).toBeInTheDocument();
     expect(screen.getByText(/ou faça login com/i)).toBeInTheDocument();
-  beforeEach(() => {
-    mockLogin.mockClear();
   });
 
   it("alterna visibilidade da senha ao clicar no botão", () => {
     render(<RigthSide />);
-
     const passwordInput = screen.getByLabelText(/senha/i) as HTMLInputElement;
     expect(passwordInput.type).toBe("password");
 
@@ -87,94 +68,70 @@ describe("RigthSide", () => {
 
   it("mostra erro de email obrigatório ao submeter vazio", async () => {
     render(<RigthSide />);
-    
     fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
-    
     expect(await screen.findByText(/campo de e-mail.*obrigatório/i)).toBeInTheDocument();
     expect(screen.getByText(/campo de senha.*obrigatório/i)).toBeInTheDocument();
   });
 
-
   it("valida tamanho mínimo da senha", async () => {
     render(<RigthSide />);
-    
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "teste@email.com" } });
     fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: "123" } });
     fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
-    
     expect(await screen.findByText(/pelo menos 6 caracteres/i)).toBeInTheDocument();
   });
 
   it("envia formulário válido e redireciona após login", async () => {
     mockLogin.mockResolvedValueOnce({ token: "fake-token-123", user: { id: 1, email: "teste@email.com" } });
-    
     render(<RigthSide />);
-    
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "teste@email.com" } });
     fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: "123456" } });
     fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
-    
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith({
         email: "teste@email.com",
         password: "123456",
       });
     });
-    
     expect(localStorage.getItem("token")).toBe("fake-token-123");
     expect(window.location.href).toBe("/dashboard");
   });
 
   it("exibe erro quando API retorna erro", async () => {
     mockLogin.mockRejectedValueOnce(new Error("Credenciais inválidas"));
-    
     render(<RigthSide />);
-    
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "teste@email.com" } });
     fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: "senhaerrada" } });
     fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
-    
     expect(await screen.findByText(/Credenciais inválidas/i)).toBeInTheDocument();
   });
 
   it("exibe erro genérico quando API retorna erro sem mensagem", async () => {
     mockLogin.mockRejectedValueOnce(new Error(""));
-    
-  it("envia formulário valido", async () => {
-    mockLogin.mockResolvedValueOnce(undefined);
     render(<RigthSide />);
-    
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "teste@email.com" } });
     fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: "senhaerrada" } });
     fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
-    
     expect(await screen.findByText(/Erro ao fazer login. Verifique suas credenciais./i)).toBeInTheDocument();
   });
 
   it("mostra loading durante requisição", async () => {
     mockLogin.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 200)));
-    
     render(<RigthSide />);
-    
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "teste@email.com" } });
     fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: "123456" } });
     fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
-    
     expect(await screen.findByRole("button", { name: /entrando\.\.\./i })).toBeDisabled();
   });
 
   it("desabilita inputs durante loading", async () => {
     mockLogin.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 200)));
-    
     render(<RigthSide />);
-    
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/senha/i);
-    
     fireEvent.change(emailInput, { target: { value: "teste@email.com" } });
     fireEvent.change(passwordInput, { target: { value: "123456" } });
     fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
-    
     await waitFor(() => {
       expect(emailInput).toBeDisabled();
       expect(passwordInput).toBeDisabled();
@@ -183,20 +140,14 @@ describe("RigthSide", () => {
 
   it("não envia formulário quando validação falha", async () => {
     render(<RigthSide />);
-    
     fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
-    
     await waitFor(() => {
       expect(mockLogin).not.toHaveBeenCalled();
-    expect(mockLogin).toHaveBeenCalledWith({
-      email: "qa@teste.com",
-      password: "123456",
     });
   });
 
   it("checkbox de lembrete está presente", () => {
     render(<RigthSide />);
-    
     const checkbox = screen.getByRole("checkbox");
     expect(checkbox).toBeInTheDocument();
     expect(checkbox).toBeChecked();
@@ -204,8 +155,6 @@ describe("RigthSide", () => {
 
   it("botão de esqueceu a senha está presente", () => {
     render(<RigthSide />);
-    
     expect(screen.getByText(/esqueceu a senha/i)).toBeInTheDocument();
-  });  
-
+  });
 });
