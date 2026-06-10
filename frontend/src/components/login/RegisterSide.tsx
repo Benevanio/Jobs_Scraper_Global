@@ -1,7 +1,9 @@
-import { useState, FormEvent } from "react";
-import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { register } from "@/services/authService"; // ← MUDE para register
 import { Image } from "@unpic/react";
 import { motion } from "framer-motion";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { FormEvent, useState } from "react";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 
@@ -59,6 +61,9 @@ export default function RegisterSide() {
   const [telefoneError, setTelefoneError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [cpfError, setCpfError] = useState("");
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   const handleRevealPassword = () => setShowPassword((prev) => !prev);
 
@@ -70,41 +75,67 @@ export default function RegisterSide() {
     return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setNomeError("");
     setEmailError("");
     setTelefoneError("");
     setPasswordError("");
     setCpfError("");
+    setApiError("");
 
     let isValid = true;
 
-    if (!nome) { setNomeError("O campo de nome é obrigatório."); isValid = false; }
+    if (!nome) { 
+      setNomeError("O campo de nome é obrigatório."); 
+      isValid = false; 
+    }
 
     if (!email) {
-      setEmailError("O campo de e-mail é obrigatório."); isValid = false;
+      setEmailError("O campo de e-mail é obrigatório."); 
+      isValid = false;
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) { setEmailError("Por favor, insira um e-mail válido."); isValid = false; }
+      if (!emailRegex.test(email)) { 
+        setEmailError("Por favor, insira um e-mail válido."); 
+        isValid = false; 
+      }
     }
 
-    if (!telefone) { setTelefoneError("O campo de telefone é obrigatório."); isValid = false; }
+    if (!telefone) { 
+      setTelefoneError("O campo de telefone é obrigatório."); 
+      isValid = false; 
+    }
 
     if (!password) {
-      setPasswordError("O campo de senha é obrigatório."); isValid = false;
+      setPasswordError("O campo de senha é obrigatório."); 
+      isValid = false;
     } else if (password.length < 6) {
-      setPasswordError("A senha precisa conter pelo menos 6 caracteres."); isValid = false;
+      setPasswordError("A senha precisa conter pelo menos 6 caracteres."); 
+      isValid = false;
     }
 
-    if (!cpf) {
-      setCpfError("O campo de CPF é obrigatório."); isValid = false;
-    } else if (cpf.replace(/\D/g, "").length < 11) {
-      setCpfError("Por favor, insira um CPF válido."); isValid = false;
+    if (cpf && cpf.replace(/\D/g, "").length > 0 && cpf.replace(/\D/g, "").length !== 11) {
+      setCpfError("CPF inválido. Deve conter 11 dígitos.");
+      isValid = false;
     }
 
     if (isValid) {
-      console.log("Cadastro válido!", { nome, email, telefone, password, cpf });
+      setIsLoading(true);
+      try {
+        const result = await register({
+          email: email,
+          password: password,
+          name: nome,
+        });
+        console.log("Cadastro bem sucedido:", result);
+        window.location.href = "/login?registered=true";
+      } catch (error: any) {
+        console.error("Erro no cadastro:", error);
+        setApiError(error.message || "Erro ao cadastrar. Tente novamente.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -144,6 +175,12 @@ export default function RegisterSide() {
 
       <form className="relative z-10 space-y-5 w-full max-w-2xl mx-auto my-8" onSubmit={handleSubmit}>
 
+        {apiError && (
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <p className="text-sm text-red-600 dark:text-red-400 text-center">{apiError}</p>
+          </div>
+        )}
+
         <div>
           <label htmlFor="nome" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">
             Nome
@@ -153,10 +190,11 @@ export default function RegisterSide() {
             type="text"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            placeholder="Bene Santos"
+            placeholder="benevanio"
+            disabled={isLoading}
             className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${
               nomeError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"
-            }`}
+            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           />
           {nomeError && <p className="mt-1.5 text-xs text-red-500 font-medium">{nomeError}</p>}
         </div>
@@ -170,10 +208,11 @@ export default function RegisterSide() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="lbene17@gmail.com"
+            placeholder="benevanio@dev.com.br"
+            disabled={isLoading}
             className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${
               emailError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"
-            }`}
+            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           />
           {emailError && <p className="mt-1.5 text-xs text-red-500 font-medium">{emailError}</p>}
         </div>
@@ -184,12 +223,13 @@ export default function RegisterSide() {
           </label>
           <div className={`flex rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm overflow-hidden transition-all focus-within:ring-2 ${
             telefoneError ? "border-red-500 focus-within:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus-within:ring-blue-500"
-          }`}>
+          } ${isLoading ? "opacity-50" : ""}`}>
             <PhoneInput
               international
               defaultCountry="BR"
               value={telefone}
               onChange={setTelefone}
+              disabled={isLoading}
               className="w-full px-4 py-3.5 text-gray-900 dark:text-white bg-transparent focus:outline-none phone-input-custom"
               placeholder="(34) 23456-7890"
             />
@@ -208,13 +248,15 @@ export default function RegisterSide() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ex: ••••••••••••"
+              disabled={isLoading}
               className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${
                 passwordError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"
-              }`}
+              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             />
             <button
               type="button"
               onClick={handleRevealPassword}
+              disabled={isLoading}
               className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-neutral-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -225,7 +267,7 @@ export default function RegisterSide() {
 
         <div>
           <label htmlFor="cpf" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">
-            CPF
+            CPF <span className="text-gray-400 dark:text-neutral-500 text-xs font-normal">(opcional)</span>
           </label>
           <input
             id="cpf"
@@ -233,21 +275,23 @@ export default function RegisterSide() {
             value={cpf}
             onChange={(e) => setCpf(formatCpf(e.target.value))}
             placeholder="091.000.000-00"
+            disabled={isLoading}
             className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${
               cpfError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"
-            }`}
+            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           />
           {cpfError && <p className="mt-1.5 text-xs text-red-500 font-medium">{cpfError}</p>}
         </div>
 
         <motion.button
           type="submit"
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:opacity-95 text-white py-3.5 px-4 rounded-xl font-bold text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md shadow-blue-500/10 cursor-pointer"
+          disabled={isLoading}
+          whileHover={{ scale: isLoading ? 1 : 1.01 }}
+          whileTap={{ scale: isLoading ? 1 : 0.99 }}
+          className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:opacity-95 text-white py-3.5 px-4 rounded-xl font-bold text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md shadow-blue-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Cadastrar
-         </motion.button>
+          {isLoading ? "Cadastrando..." : "Cadastrar"}
+        </motion.button>
       </form>
 
       <div className="relative z-10 w-full max-w-2xl mx-auto">
@@ -260,15 +304,14 @@ export default function RegisterSide() {
           </div>
         </div>
 
-        {/* Botões Sociais Atualizados com Hover translúcido e bordas combinando */}
         <div className="grid grid-cols-3 gap-4">
-          <button className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer">
+          <button type="button" disabled={isLoading} className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50">
             <Image src="/google.png" alt="Google" width={20} height={20} className="object-contain" />
           </button>
-          <button className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer">
+          <button type="button" disabled={isLoading} className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50">
             <Image src="/facebook.png" alt="Facebook" width={20} height={20} className="object-contain" />
           </button>
-          <button className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer">
+          <button type="button" disabled={isLoading} className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50">
             <svg className="h-5 w-5 fill-gray-900 dark:fill-white transition-colors" viewBox="0 0 24 24">
               <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z"/>
             </svg>

@@ -1,5 +1,5 @@
 import { Image } from "@unpic/react"
-import { Instagram, Linkedin, Search, Bell, TrendingUp } from "lucide-react"
+import { Bell, Instagram, Linkedin, Search, TrendingUp } from "lucide-react"
 
 export default function LeftSide() {
   return (
@@ -11,7 +11,7 @@ export default function LeftSide() {
           alt="Profissionais de tecnologia"
           layout="fullWidth"
           className="h-full w-full object-cover opacity-[0.85] dark:opacity-30 mix-blend-multiply dark:mix-blend-luminosity"
-          priority
+          priority={true}
         />
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-purple-500/5 to-transparent pointer-events-none" />
       </div>
