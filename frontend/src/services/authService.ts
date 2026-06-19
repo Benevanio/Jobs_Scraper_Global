@@ -55,6 +55,7 @@ export interface RegisterData {
   cpf?: string;
   technologies?: string[];
   level?: string;
+  role?: "user" | "admin";
 }
 
 export async function login(credentials: LoginCredentials) {
@@ -86,6 +87,7 @@ export async function register(userData: RegisterData) {
       cpf: userData.cpf,
       technologies: userData.technologies,
       level: userData.level,
+      role: userData.role,
     }),
     credentials: "include",
   });
