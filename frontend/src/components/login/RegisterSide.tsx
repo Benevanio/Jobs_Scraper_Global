@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { register, getGoogleAuthUrl } from "@/services/authService";
+import { Badge } from "@/components/ui/badge";
 import { Image } from "@unpic/react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
@@ -18,6 +19,13 @@ const STATIC_STARS = Array.from({ length: 40 }).map((_, i) => {
     duration: random(2, 6),
   };
 });
+
+const POPULAR_TECHNOLOGIES = [
+  "React", "Node.js", "Python", "Java", "TypeScript", 
+  "Vue.js", "Angular", "Go", "Ruby", "C#", 
+  "PHP", "Docker", "AWS", "SQL", "MongoDB", 
+  "Flutter", "React Native"
+];
 
 function StarsBackground() {
   return (
@@ -55,12 +63,25 @@ export default function RegisterSide() {
   const [telefone, setTelefone] = useState<string | undefined>("");
   const [password, setPassword] = useState("");
   const [cpf, setCpf] = useState("");
+  const [level, setLevel] = useState("");
+  const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>([]);
+
+  const toggleTechnology = (tech: string) => {
+    if (isLoading) return;
+    setSelectedTechnologies(prev => 
+      prev.includes(tech) 
+        ? prev.filter(t => t !== tech)
+        : [...prev, tech]
+    );
+  };
 
   const [nomeError, setNomeError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [telefoneError, setTelefoneError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [cpfError, setCpfError] = useState("");
+  const [levelError, setLevelError] = useState("");
+  const [technologiesError, setTechnologiesError] = useState("");
   
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -92,6 +113,8 @@ export default function RegisterSide() {
     setTelefoneError("");
     setPasswordError("");
     setCpfError("");
+    setLevelError("");
+    setTechnologiesError("");
     setApiError("");
 
     let isValid = true;
@@ -130,6 +153,16 @@ export default function RegisterSide() {
       isValid = false;
     }
 
+    if (!level) {
+      setLevelError("A seleção de nível é obrigatória.");
+      isValid = false;
+    }
+
+    if (selectedTechnologies.length === 0) {
+      setTechnologiesError("Selecione ao menos uma tecnologia.");
+      isValid = false;
+    }
+
     if (isValid) {
       setIsLoading(true);
       try {
@@ -137,6 +170,10 @@ export default function RegisterSide() {
           email: email,
           password: password,
           name: nome,
+          phone: telefone,
+          cpf: cpf,
+          level: level,
+          technologies: selectedTechnologies,
         });
         window.location.href = "/login?registered=true";
       } catch (error: any) {
@@ -212,6 +249,37 @@ export default function RegisterSide() {
           <label htmlFor="cpf" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">CPF <span className="text-gray-400 dark:text-neutral-500 text-xs font-normal">(opcional)</span></label>
           <input id="cpf" type="text" value={cpf} onChange={(e) => setCpf(formatCpf(e.target.value))} placeholder="091.000.000-00" disabled={isLoading} className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${cpfError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"} ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`} />
           {cpfError && <p className="mt-1.5 text-xs text-red-500 font-medium">{cpfError}</p>}
+        </div>
+        <div>
+          <label htmlFor="level" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Nível Profissional</label>
+          <select id="level" value={level} onChange={(e) => setLevel(e.target.value)} disabled={isLoading} className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all shadow-sm ${levelError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"} ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}>
+            <option value="" disabled hidden>Selecione seu nível</option>
+            <option value="Estágio">Estágio</option>
+            <option value="Júnior">Júnior</option>
+            <option value="Pleno">Pleno</option>
+            <option value="Sênior">Sênior</option>
+            <option value="Especialista">Especialista</option>
+          </select>
+          {levelError && <p className="mt-1.5 text-xs text-red-500 font-medium">{levelError}</p>}
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Tecnologias que domina</label>
+          <div className={`flex flex-wrap gap-2.5 p-4 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm transition-all ${technologiesError ? "border-red-500" : "border-gray-200 dark:border-neutral-700"} ${isLoading ? "opacity-50" : ""}`}>
+            {POPULAR_TECHNOLOGIES.map((tech) => {
+              const isSelected = selectedTechnologies.includes(tech);
+              return (
+                <Badge
+                  key={tech}
+                  variant={isSelected ? "default" : "secondary"}
+                  className={`cursor-pointer text-sm py-1.5 px-3.5 transition-all duration-200 hover:scale-105 active:scale-95 border-0 ${isSelected ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white shadow-md shadow-blue-500/20" : "bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-600"}`}
+                  onClick={() => toggleTechnology(tech)}
+                >
+                  {tech}
+                </Badge>
+              );
+            })}
+          </div>
+          {technologiesError && <p className="mt-1.5 text-xs text-red-500 font-medium">{technologiesError}</p>}
         </div>
         <motion.button type="submit" disabled={isLoading} whileHover={{ scale: isLoading ? 1 : 1.01 }} whileTap={{ scale: isLoading ? 1 : 0.99 }} className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:opacity-95 text-white py-3.5 px-4 rounded-xl font-bold text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md shadow-blue-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
           {isLoading ? "Cadastrando..." : "Cadastrar"}

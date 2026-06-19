@@ -53,6 +53,8 @@ export interface RegisterData {
   name: string;
   phone?: string;
   cpf?: string;
+  technologies?: string[];
+  level?: string;
 }
 
 export async function login(credentials: LoginCredentials) {
@@ -82,6 +84,8 @@ export async function register(userData: RegisterData) {
       name: userData.name,
       phone: userData.phone,
       cpf: userData.cpf,
+      technologies: userData.technologies,
+      level: userData.level,
     }),
     credentials: "include",
   });
