@@ -5,6 +5,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
@@ -24,6 +25,10 @@ export const users = pgTable(
     emailVerified: boolean("email_verified").default(false).notNull(),
 
     avatarUrl: text("avatar_url"),
+    phone: varchar("phone", { length: 20 }),
+    cpf: varchar("cpf", { length: 14 }),
+    technologies: text("technologies").array().default([]),
+    level: varchar("level", { length: 50 }),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
