@@ -1,7 +1,10 @@
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
+import { register } from "./metrics/metrics";
 import { corsOptions } from "./middleware/cors";
 import { errorHandler } from "./middleware/errorHandler";
+import { metricsMiddleware } from "./middleware/metrics";
+import { requestIdMiddleware } from "./middleware/requestId";
 import { requireAuth } from "./middleware/requireAuth";
 import { securityHeaders } from "./middleware/securityHeaders";
 import { withSession } from "./middleware/withSession";
@@ -17,6 +20,8 @@ export function createJobsApiApp() {
   app.disable("x-powered-by");
   app.use(express.json({ limit: "16kb" }));
   app.use(securityHeaders);
+  app.use(requestIdMiddleware);
+  app.use(metricsMiddleware);
 
   // um wrapper para garantir se o CORS chega com erro 403
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -45,6 +50,11 @@ export function createJobsApiApp() {
    *         description: API funcionando
    */
   app.get("/api/health", (_req, res) => res.json({ ok: true }));
+
+  app.get("/metrics", async (_req, res) => {
+    res.set("Content-Type", register.contentType);
+    res.end(await register.metrics());
+  });
 
   app.use(errorHandler);
 
