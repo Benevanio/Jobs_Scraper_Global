@@ -8,15 +8,15 @@ vi.mock("react-router-dom", () => ({
 }));
 
 const mockUseAuth = vi.fn();
-vi.mock("@/context/AuthContext", () => ({
+vi.mock("@/domains/auth/application/AuthContext", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-vi.mock("@/Loading", () => ({
+vi.mock("@/shared/ui/Loading", () => ({
   default: () => <div data-testid="loading">Loading...</div>,
 }));
 
-import AuthCallback from "@/pages/auth/AuthCallback";
+import AuthCallback from "@/domains/auth/presentation/pages/AuthCallbackPage";
 
 describe("AuthCallback", () => {
   beforeEach(() => {

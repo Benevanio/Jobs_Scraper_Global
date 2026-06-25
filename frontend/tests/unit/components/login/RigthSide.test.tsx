@@ -7,8 +7,9 @@ const mockLogin = vi.fn();
 const mockGetGoogleAuthUrl = vi.fn();
 const mockGetGithubAuthUrl = vi.fn();
 const mockGetLinkedinAuthUrl = vi.fn();
+const mockNavigate = vi.fn();
 
-vi.mock("@/services/authService", () => ({
+vi.mock("@/domains/auth/infrastructure/authApi", () => ({
   login: (...args: any[]) => mockLogin(...args),
   getGoogleAuthUrl: (...args: any[]) => mockGetGoogleAuthUrl(...args),
   getGithubAuthUrl: (...args: any[]) => mockGetGithubAuthUrl(...args),
@@ -27,10 +28,10 @@ vi.mock("framer-motion", () => ({
 }));
 
 vi.mock("react-router-dom", () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => mockNavigate,
 }));
 
-import RigthSide from "@/components/login/RigthSide";
+import RigthSide from "@/domains/auth/presentation/components/LoginFormPanel";
 
 describe("RigthSide", () => {
   const originalLocation = window.location;
@@ -40,6 +41,7 @@ describe("RigthSide", () => {
     mockGetGoogleAuthUrl.mockReset();
     mockGetGithubAuthUrl.mockReset();
     mockGetLinkedinAuthUrl.mockReset();
+    mockNavigate.mockReset();
     Object.defineProperty(window, "location", {
       configurable: true,
       value: { href: "" },
@@ -103,7 +105,7 @@ describe("RigthSide", () => {
       });
     });
     expect(localStorage.getItem("token")).toBe("fake-token-123");
-    expect(window.location.href).toBe("/dashboard");
+    expect(mockNavigate).toHaveBeenCalledWith("/app", { replace: true });
   });
 
   it("exibe erro quando API retorna erro", async () => {

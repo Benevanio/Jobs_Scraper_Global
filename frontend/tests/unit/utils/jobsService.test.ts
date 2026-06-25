@@ -1,4 +1,4 @@
-import { fetchJobFiles, fetchJobsByFile, fetchKeywords, saveKeywords } from "@/services/jobsService";
+import { fetchJobFiles, fetchJobsByFile, fetchKeywords, saveKeywords } from "@/domains/jobs/infrastructure/jobsApi";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("jobsService", () => {

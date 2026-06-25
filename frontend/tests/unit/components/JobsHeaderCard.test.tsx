@@ -1,8 +1,8 @@
-import { JobsHeaderCard } from "@/components/JobsHeaderCard";
+import { JobsHeaderCard } from "@/domains/jobs/presentation/components/JobsHeaderCard";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/hooks/useTheme", () => ({
+vi.mock("@/shared/hooks/useTheme", () => ({
   useTheme: () => ({ resolvedTheme: "light", toggleTheme: vi.fn() }),
 }));
 
