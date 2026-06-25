@@ -32,7 +32,7 @@ export class CredentialsService {
   async register(
     input: RegisterInput,
   ): Promise<{ user: User; session: Session }> {
-    const { email, password, name } = RegisterSchema.parse(input);
+    const { email, password, name, phone, cpf, technologies, level, role } = RegisterSchema.parse(input);
 
     const existingCredential = await db.query.credentials.findFirst({
       where: eq(credentials.email, email),
@@ -49,7 +49,17 @@ export class CredentialsService {
 
     const [user] = await db
       .insert(users)
-      .values({ email, displayName: name, username, emailVerified: false })
+      .values({ 
+        email, 
+        displayName: name, 
+        username, 
+        emailVerified: false,
+        phone,
+        cpf,
+        technologies,
+        level,
+        role
+      })
       .returning();
 
     await db.insert(credentials).values({ userId: user.id, email, passwordHash });

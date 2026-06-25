@@ -53,6 +53,9 @@ export interface RegisterData {
   name: string;
   phone?: string;
   cpf?: string;
+  technologies?: string[];
+  level?: string;
+  role?: "user" | "admin";
 }
 
 export async function login(credentials: LoginCredentials) {
@@ -82,6 +85,9 @@ export async function register(userData: RegisterData) {
       name: userData.name,
       phone: userData.phone,
       cpf: userData.cpf,
+      technologies: userData.technologies,
+      level: userData.level,
+      role: userData.role,
     }),
     credentials: "include",
   });
