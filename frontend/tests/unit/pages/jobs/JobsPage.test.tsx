@@ -219,6 +219,7 @@ describe("JobsPage", () => {
     render(<JobsPage />);
     expect(hookState.capturedTableProps).toBeDefined();
     expect(hookState.capturedTableProps.meta.modifiedAt).toBeNull();
+    expect(hookState.capturedTableProps.formatDate(null)).toBe("-");
   });
 
   it("formata data corretamente quando modifiedAt é um timestamp válido", () => {
@@ -232,5 +233,8 @@ describe("JobsPage", () => {
     render(<JobsPage />);
 
     expect(hookState.capturedTableProps.meta.modifiedAt).toBe(timestamp);
+    expect(hookState.capturedTableProps.formatDate(timestamp)).toBe(
+      new Date(timestamp).toLocaleString("pt-BR"),
+    );
   });
 });
